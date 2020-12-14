@@ -364,7 +364,7 @@ class DashBoard extends Component {
                           <CardIcon color={filter[filter.length - 1].is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
                             <Backup />
                           </CardIcon>
-                          <p className={classes.cardCategory}>{measure.toFixed(6)} мг/м3</p>
+                          <p className={classes.cardCategory}>{measure.toFixed(3)} мг/м3</p>
                           <p className={classes.cardCategory}>{(measure / element.max_m).toFixed(3)} долей ПДК</p>
 
                           <h3 className={classes.cardTitle}>{element.chemical}</h3>
@@ -585,7 +585,7 @@ class DashBoard extends Component {
                           <CardIcon color={filter[filter.length - 1].is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
                             <Backup />
                           </CardIcon>
-                          <p className={classes.cardCategory}>{measure.toFixed(6)} мг/м3</p>
+                          <p className={classes.cardCategory}>{measure.toFixed(3)} мг/м3</p>
                           <p className={classes.cardCategory}>{(measure / element.max_m).toFixed(3)} долей ПДК</p>
 
                           <h3 className={classes.cardTitle}>{element.chemical}</h3>

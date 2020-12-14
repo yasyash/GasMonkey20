@@ -46,8 +46,9 @@ import { queryEvent, queryOperativeEvent } from './actions/queryActions';
 import pinAlert from './pin-alert.png';
 
 
-
 const pngs = require.context('../../tiles', true, /\.png$/);
+
+
 //const pinAlert = require.context('./', true, /\.svg$/);
 //const keys = pngs.keys();
 
@@ -128,7 +129,6 @@ class MapsForm extends React.Component {
         legendPosition: 'right',
         locations: ''
     };
-
 
     onClickInner = () => {
         this.setState({ bounds: inner })
@@ -220,7 +220,7 @@ class MapsForm extends React.Component {
                                 rows_measure.push({
                                     'chemical': element.chemical + ', мг/м.куб.', 'macs': element.max_m,
                                     'date': new Date(filter[filter.length - 1].date_time).format('dd-MM-Y'),
-                                    'time': new Date(filter[filter.length - 1].date_time).format('H:mm:SS'), 'value': quotient.toFixed(6), 'className': class_css
+                                    'time': new Date(filter[filter.length - 1].date_time).format('H:mm:SS'), 'value': quotient.toFixed(3), 'className': class_css
                                 })
 
                                 var prcnt = range_macs ;
@@ -344,22 +344,7 @@ class MapsForm extends React.Component {
                         </div>
 
                     </Tab>
-
-                    <Tab label="TEST" >
-                        <div id='container1'>
-                        <x3d width='500px' height='300px'>
-            <scene>
-                <shape id="someId">
-                    <appearance>
-                        <material id='color' diffusecolor={ '1 0 0' }> </material>
-                    </appearance>
-                    <box></box>
-                </shape>
-            </scene>
-        </x3d>
-                        </div>
-
-                    </Tab>
+ 
                 </Tabs>
 
             </Paper >
