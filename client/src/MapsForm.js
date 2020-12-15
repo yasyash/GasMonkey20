@@ -309,9 +309,11 @@ class MapsForm extends React.Component {
                             });
                             popupContent += "Влажность внеш.: " + (sum / hum.length).toFixed(0) + " %<br/>";
 
-                            marker.bindPopup(popupContent, { autoClose: false });
 
                         };
+                            marker.bindPopup(popupContent, { autoClose: false });
+
+
                     }
                 });
             })
