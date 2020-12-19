@@ -213,7 +213,7 @@ router.post('/api_update', authenticate, (req, resp) => {
     let data = req.body;
     let _is_present = true;
     //console.log( data.last_time);
-    if (data.is_present)
+    if (data.is_present == true)
         _is_present = data.is_present;
 
     INJ.where({ id: data.id })
