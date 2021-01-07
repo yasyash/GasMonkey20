@@ -25,7 +25,7 @@ import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
 import StationsIcon from '@material-ui/icons/AccountBalance';
 import StationIcon from './icons/Stations';
-
+import Backdown from '@material-ui/icons/CloudDownload';
 
 // core components
 import GridItem from "material-dashboard-react/components/Grid/GridItem";
@@ -43,8 +43,11 @@ import WarningIcon from '@material-ui/icons/Warning';
 import Divider from '@material-ui/core/Divider';
 
 import isEmpty from 'lodash.isempty';
-
-import moment from 'moment';
+import CloudyIcon from '@material-ui/icons/WbCloudy';
+import Weather from './icons/Weather';
+import CloudOffIcon from '@material-ui/icons/CloudOff';
+import ExploreIcon from '@material-ui/icons/Explore';
+//import moment from 'moment';
 //import Sidebar from 'material-dashboard-react/components/Sidebar/Sidebar';
 //import appRoutes from 'material-dashboard-react/routes/index';
 
@@ -54,7 +57,7 @@ import * as _materialDashboardReact from "material-dashboard-react/assets/jss/ma
 
 import { queryDashBoardDataOperativeEvent, queryAllDataOperativeEvent, queryEvent, queryMeteoEvent } from './actions/queryActions';
 import { addLogsList, deleteLogsList } from './actions/logsAddActions';
-import { filter } from 'ramda';
+//import { filter } from 'ramda';
 //import auth from './reducers/auth';
 import TextField from '@material-ui/core/TextField';
 
@@ -326,18 +329,35 @@ class DashBoard extends Component {
     const { username, is_admin } = this.props;
 
     const { classes } = this.props;
-    const { stationsList, macsList, dataList, open, anchorEl, mobileOpen, alertsList, door_alert, fire_alert, systemList } = this.state;
+    const { stationsList, macsList, dataList, sensorsList, open, anchorEl, mobileOpen, alertsList, door_alert, fire_alert, systemList } = this.state;
     var tabs = [];
     var filter = '';
+    var _filter = '';
+    var _type_measure = '';
     var measure = 0;
     var door_alert_filter = '';
     var fire_alert_filter = '';
     var voltage;
+    var weatherList = '';
+
+
+
+
 
     if (is_admin) {
       if (stationsList) {// if not empty
 
         stationsList.map((item, i) => (
+
+          macsList.map((element, j) => {
+
+            weatherList = dataList.filter((opt, k, arr) => {
+              _type_measure = sensorsList.filter((_tm_item, _indx) => {
+                return (_tm_item.typemeasure == opt.typemeasure);
+              })
+              return ((opt.typemeasure != element.chemical) && (opt.id == item.id) && (_type_measure[0].measure_class != 'data'));
+            })
+          }),
 
           door_alert_filter = door_alert.filter((_itm, _in, arr) => {
             return ((_itm[item.id]));
@@ -362,12 +382,85 @@ class DashBoard extends Component {
                       <Card>
                         <CardHeader stats icon >
                           <CardIcon color={filter[filter.length - 1].is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
-                            <Backup />
+                            {filter[0].increase ? <Backup /> : <Backdown />}
                           </CardIcon>
-                          <p className={classes.cardCategory}>{measure.toFixed(3)} мг/м3</p>
-                          <p className={classes.cardCategory}>{(measure / element.max_m).toFixed(3)} долей ПДК</p>
+                          <p className={classes.cardCategory}>Среднее (20 мин.) : {(element.chemical == 'CO') ? measure.toFixed(1) : measure.toFixed(3)} мг/м3</p>
+                          <p className={classes.cardCategory}> {(element.chemical == 'CO') ? (measure / element.max_m).toFixed(1) : (measure / element.max_m).toFixed(3)} долей ПДК</p>
 
                           <h3 className={classes.cardTitle}>{element.chemical}</h3>
+                          <p className={classes.cardCategory}>Мгновенное : {(element.chemical == 'CO') ? filter[0].momental_measure.toFixed(3) : filter[0].momental_measure.toFixed(5)} мг/м3</p>
+                        </CardHeader>
+                        <CardFooter stats>
+                          <div className={classes.stats}>
+                            <Place />
+                            {item.place} </div>
+                        </CardFooter>
+                      </Card>
+
+                    </GridItem>)
+
+
+                  ))}
+
+{(macsList) &&
+                  macsList.map((element, j) => (
+                    (sensorsList.length > 0) && (
+                      filter = sensorsList.filter((opt, k, arr) => {
+                        return ((opt.typemeasure == element.chemical) && (opt.id == item.id));
+                      })
+                    ),
+                    (filter.length > 0) && (
+                      _filter = dataList.filter((opt, k, arr) => {
+                        return ((opt.typemeasure == element.chemical) && (opt.id == item.id));
+                      })
+                    ),
+                    (_filter.length > 0) && ( filter =[] ),
+
+
+
+
+                    (filter.length > 0) && (<GridItem xs={3} sm={3} md={3} key={item.namestation + '_' + filter[0].typemeasure}>
+                      <Card>
+                        <CardHeader stats icon  >
+                          <CardIcon color={"info"} style={{ padding: "5px", color: "lightgrey" }}  >
+                            <CloudOffIcon />
+                          </CardIcon>
+
+
+                          <h3 className={classes.cardTitle}>{filter[0].typemeasure}</h3>
+                          <p className={classes.cardCategory}>Отключен...</p>
+
+                        </CardHeader>
+                        <CardFooter stats>
+                          <div className={classes.stats}>
+                            <Place />
+                            {item.place} </div>
+                        </CardFooter>
+                      </Card>
+
+                    </GridItem>)
+
+
+                  ))}
+
+
+                <hr style={{ width: "80%", size: "1" }} />
+
+                {(weatherList) &&
+                  weatherList.map((element, j) => (
+                    _type_measure = sensorsList.filter((_tm_item, _indx) => {
+                      return (_tm_item.typemeasure == element.typemeasure);
+                    }),
+                    ((weatherList.length > 0) && (measure = element.measure)),
+                    (weatherList.length > 0) && (<GridItem xs={3} sm={3} md={3} key={item.namestation + '_' + _type_measure[0].typemeasure}>
+                      <Card>
+                        <CardHeader stats icon >
+                          <CardIcon color={element.is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
+                            <ExploreIcon />
+                          </CardIcon>
+                          <p className={classes.cardCategory}>Среднее (20 мин.) : {measure.toFixed(1)} {_type_measure[0].unit_name}</p>
+                          <h3 className={classes.cardTitle}>{_type_measure[0].typemeasure}</h3>
+                          <p className={classes.cardCategory}>Мгновенное : {element.momental_measure.toFixed(1)} {_type_measure[0].unit_name}</p>
 
                         </CardHeader>
                         <CardFooter stats>
@@ -567,6 +660,15 @@ class DashBoard extends Component {
     } else {
       if (stationsList) {// if not empty
         stationsList.map((item, i) => (
+          macsList.map((element, j) => {
+
+            weatherList = dataList.filter((opt, k, arr) => {
+              _type_measure = sensorsList.filter((_tm_item, _indx) => {
+                return (_tm_item.typemeasure == opt.typemeasure);
+              })
+              return ((opt.typemeasure != element.chemical) && (opt.id == item.id) && (_type_measure[0].measure_class != 'data'));
+            })
+          }),
           tabs.push({
             tabName: item.namestation,
             tabIcon: Backup,
@@ -585,11 +687,11 @@ class DashBoard extends Component {
                           <CardIcon color={filter[filter.length - 1].is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
                             <Backup />
                           </CardIcon>
-                          <p className={classes.cardCategory}>{measure.toFixed(3)} мг/м3</p>
-                          <p className={classes.cardCategory}>{(measure / element.max_m).toFixed(3)} долей ПДК</p>
+                          <p className={classes.cardCategory}>Среднее (20 мин.) : {(element.chemical == 'CO') ? measure.toFixed(1) : measure.toFixed(3)} мг/м3</p>
+                          <p className={classes.cardCategory}>{(element.chemical == 'CO') ? (measure / element.max_m).toFixed(1) : (measure / element.max_m).toFixed(3)} долей ПДК</p>
 
                           <h3 className={classes.cardTitle}>{element.chemical}</h3>
-
+                          <p className={classes.cardCategory}>Мгновенное : {(element.chemical == 'CO') ? filter[0].momental_measure.toFixed(3) : filter[0].momental_measure.toFixed(5)} мг/м3</p>
                         </CardHeader>
                         <CardFooter stats>
                           <div className={classes.stats}>
@@ -602,7 +704,36 @@ class DashBoard extends Component {
 
 
                   ))}
+ <hr style={{ width: "80%", size: "1" }} />
 
+{(weatherList) &&
+  weatherList.map((element, j) => (
+    _type_measure = sensorsList.filter((_tm_item, _indx) => {
+      return (_tm_item.typemeasure == element.typemeasure);
+    }),
+    ((weatherList.length > 0) && (measure = element.measure)),
+    (weatherList.length > 0) && (<GridItem xs={3} sm={3} md={3} key={item.namestation + '_' + _type_measure[0].typemeasure}>
+      <Card>
+        <CardHeader stats icon >
+          <CardIcon color={element.is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
+            <ExploreIcon />
+          </CardIcon>
+          <p className={classes.cardCategory}>Среднее (20 мин.) : {measure.toFixed(1)} {_type_measure[0].unit_name}</p>
+          <h3 className={classes.cardTitle}>{_type_measure[0].typemeasure}</h3>
+          <p className={classes.cardCategory}>Мгновенное : {element.momental_measure.toFixed(1)} {_type_measure[0].unit_name}</p>
+
+        </CardHeader>
+        <CardFooter stats>
+          <div className={classes.stats}>
+            <Place />
+            {item.place} </div>
+        </CardFooter>
+      </Card>
+
+    </GridItem>)
+
+
+  ))}
               </GridContainer >
 
             )
