@@ -431,13 +431,13 @@ export function getDev() {
                         filter = stns.filter((item, i, arr) => {
                             return item.idd == element.idd;
                         });
-                        if (filter.lenght > 0)
+                        if (filter.length > 0)
                             idd_old = filter[0].idd;
                     }
                     macs_filter = macs.filter((item, i, arr) => {
                         return item.chemical == element.typemeasure;
                     });
-                    if (filter.lenght > 0)
+                    if (filter.length > 0)
 
                         list.push({
                             id: String(element.id),
