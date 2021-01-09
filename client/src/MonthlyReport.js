@@ -123,7 +123,7 @@ class MonthlyReport extends React.Component {
         };
 
         //first init
-       // dateAddAction({ 'dateReportBegin': this.state.dateReportBegin });
+        // dateAddAction({ 'dateReportBegin': this.state.dateReportBegin });
         //dateAddAction({ 'dateReportEnd': this.state.dateReportEnd });
         // this.onClick = this.onSubmit.bind(this);
         // this.onClose= this.handleClose.bind(this);
@@ -326,14 +326,26 @@ class MonthlyReport extends React.Component {
                     <table border="1" width="100%" style={{ 'Align': 'center' }} className={classes._td} id="monthly_report_table">
                         <tbody>
                             <tr >
-                                <td style={{ 'width': '15%' }} rowSpan="2">
+                                <td style={{ 'width': '3%' }} rowSpan="2">
                                     <b> Время</b>
+                                </td>
+                                <td style={{ 'width': '3%', 'fontSize': '11px' }} rowSpan="2">
+                                    Темп.,
+                                    С
+                            </td>
+                                <td style={{ 'width': '3%', 'fontSize': '11px' }} rowSpan="2">
+                                    Напр. ветра, град.
+                            </td>
+                                <td style={{ 'width': '3%', 'fontSize': '11px' }} rowSpan="2">
+                                    Скор. ветра, м/с                            </td>
+                                <td style={{ 'width': '3%', 'fontSize': '11px' }} rowSpan="2">
+                                    Отн. влажность, %
                                 </td>
                                 <td style={{ 'width': '85%' }} colSpan="20">
                                     <b> Концентрация, мг/м. куб.</b>
                                 </td>
                             </tr>
-                            <tr style = {{'fontSize': '11px'}}>
+                            <tr style={{ 'fontSize': '11px' }}>
                                 <td style={{ 'width': '5%' }} >
                                     NO
                                  </td>
@@ -399,8 +411,12 @@ class MonthlyReport extends React.Component {
 
                             {(data_raw) &&// if not empty
                                 data_raw.map((option, i) => (
-                                    <tr key={'tr_' + i} style = {{'fontSize': '11px'}}>
+                                    <tr key={'tr_' + i} style={{ 'fontSize': '11px' }}>
                                         <td> {option.time}</td>
+                                        <td> {option.temp}</td>
+                                        <td> {option.dir}</td>
+                                        <td> {option.spd}</td>
+                                        <td> {option.hum}</td>
                                         <td> {option.NO}</td>
                                         <td> {option.NO2}</td>
                                         <td> {option.NH3}</td>
@@ -432,30 +448,30 @@ class MonthlyReport extends React.Component {
                             {(avrg_measure) &&// if not empty
                                 avrg_measure.map((option, i) => (
                                     (i > 0 && i < avrg_measure.length - 1) &&
-                                    <tr key={'trm_' + i} style = {{'fontSize': '11px'}}>
-                                    <td> {option[0]}</td>
-                                    <td> {option[1]}</td>
-                                    <td> {option[2]}</td>
-                                    <td> {option[3]}</td>
-                                    <td> {option[4]}</td>
-                                    <td> {option[5]}</td>
-                                    <td> {option[6]}</td>
-                                    <td> {option[7]}</td>
-                                    <td> {option[8]}</td>
-                                    <td> {option[9]}</td>
-                                    <td> {option[10]}</td>
-                                    <td> {option[11]}</td>
-                                    <td> {option[12]}</td>
-                                    <td> {option[13]}</td>
-                                    <td> {option[14]}</td>
-                                    <td> {option[15]}</td>
-                                    <td> {option[16]}</td>
-                                    <td> {option[17]}</td>
-                                    <td> {option[18]}</td>
-                                    <td> {option[19]}</td>
-                                    <td> {option[20]}</td>
+                                    <tr key={'trm_' + i} style={{ 'fontSize': '11px' }}>
+                                        <td colSpan="5"> {option[0]}</td>
+                                        <td> {option[1]}</td>
+                                        <td> {option[2]}</td>
+                                        <td> {option[3]}</td>
+                                        <td> {option[4]}</td>
+                                        <td> {option[5]}</td>
+                                        <td> {option[6]}</td>
+                                        <td> {option[7]}</td>
+                                        <td> {option[8]}</td>
+                                        <td> {option[9]}</td>
+                                        <td> {option[10]}</td>
+                                        <td> {option[11]}</td>
+                                        <td> {option[12]}</td>
+                                        <td> {option[13]}</td>
+                                        <td> {option[14]}</td>
+                                        <td> {option[15]}</td>
+                                        <td> {option[16]}</td>
+                                        <td> {option[17]}</td>
+                                        <td> {option[18]}</td>
+                                        <td> {option[19]}</td>
+                                        <td> {option[20]}</td>
 
-                                </tr>
+                                    </tr>
                                 ))}
 
 

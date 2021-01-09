@@ -456,7 +456,7 @@ class DashBoard extends Component {
                       <Card>
                         <CardHeader stats icon >
                           <CardIcon color={element.is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
-                            <ExploreIcon />
+                            <Weather />
                           </CardIcon>
                           <p className={classes.cardCategory}>Среднее (20 мин.) : {measure.toFixed(1)} {_type_measure[0].unit_name}</p>
                           <h3 className={classes.cardTitle}>{_type_measure[0].typemeasure}</h3>
@@ -716,7 +716,7 @@ class DashBoard extends Component {
       <Card>
         <CardHeader stats icon >
           <CardIcon color={element.is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
-            <ExploreIcon />
+            <Weather />
           </CardIcon>
           <p className={classes.cardCategory}>Среднее (20 мин.) : {measure.toFixed(1)} {_type_measure[0].unit_name}</p>
           <h3 className={classes.cardTitle}>{_type_measure[0].typemeasure}</h3>
