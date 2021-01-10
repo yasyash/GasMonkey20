@@ -112,7 +112,7 @@
   },
   "scripts": {
     "server": "babel-node --max-old-space-size=8192 -- api/index.js",
-    "production": "NODE_ENV=production nodemon --watch server --exec babel-node -- api/index.js",
+    "production": "NODE_ENV=production babel-node --max-old-space-size=8192 -- api/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Yaroslav Shkliar & ILIT.RU",

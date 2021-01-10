@@ -214,7 +214,8 @@ class MenuReport extends Component {
             sensors_actual,
             station_name,
             report_type,
-            data_4_report
+            data_4_report,
+            autoHideDuration
         } = props;
 
         if (isStation) { isNll = true }
@@ -244,7 +245,8 @@ class MenuReport extends Component {
             chemical_list: ['NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая',
                 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол', 'Атм. давление', 'Темп. внешняя',
                 'Скорость ветра', 'Влажность внеш.', 'Направление ветра', 'Интенс. осадков'],
-            chemical: ''
+            chemical: '',
+            autoHideDuration: isEmpty(autoHideDuration) ? 3000: autoHideDuration
         };
 
 
@@ -974,7 +976,7 @@ class MenuReport extends Component {
                         <Snackbar
                             open={this.props.isLoading}
                             // TransitionComponent={<Slider direction="up" />}
-                            autoHideDuration={3000}
+                            autoHideDuration={this.props.autoHideDuration}
                             onClose={this.props.handleSnackClose}
 
                             message={<span id="message-id">{this.props.snack_msg}</span>}

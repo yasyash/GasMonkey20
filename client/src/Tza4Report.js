@@ -104,7 +104,8 @@ class Tza4Report extends React.Component {
             adds: [],
             data_4_report: [],
             tza4_meteo: [],
-            checked_meteo: false
+            checked_meteo: false,
+            autoHideDuration: 3000
 
         };
 
@@ -187,7 +188,8 @@ class Tza4Report extends React.Component {
         params.chemical = state.chemical
         params.get = true;
         params.checked_meteo = this.state.checked_meteo;
-
+        this.setState({ isLoading: true });
+        this.setState({autoHideDuration: 200000, snack_msg: 'Дождитесь завершения операции...' });
         reportGet_tza4(params).then(resp => {
             if (resp) {
 
@@ -203,11 +205,11 @@ class Tza4Report extends React.Component {
                 this.setState({ 'tza4': tza4_tmpl });
 
                 this.setState({ isLoading: true });
-                this.setState({ snack_msg: 'Данные успешно загружены...' });
+                this.setState({ autoHideDuration: 3000, snack_msg: 'Данные успешно загружены...' });
             }
             else {
                 this.setState({ isLoading: false })
-                this.setState({ snack_msg: 'Данные отсутствуют...' })
+                this.setState({autoHideDuration: 3000, snack_msg: 'Данные отсутствуют...' })
 
             };
 
@@ -238,7 +240,7 @@ class Tza4Report extends React.Component {
         const { classes } = this.props;
         const { tza4_meteo, tza4 } = this.state;
         const { adds } = this.state;
-        const { snack_msg, isLoading, checked_meteo } = this.state;
+        const { snack_msg, isLoading, checked_meteo, autoHideDuration } = this.state;
 
 
 
@@ -249,7 +251,7 @@ class Tza4Report extends React.Component {
             <Paper >
                 <br />
                 <MenuReport
-                    {...this.props} snack_msg={snack_msg} isLoading={isLoading}
+                    {...this.props} snack_msg={snack_msg} isLoading={isLoading} autoHideDuration={autoHideDuration}
                     station_name={this.state.station_name}
                     station_actual={this.state.station_actual}
                     //dateReportBegin={this.state.dateReportBegin}

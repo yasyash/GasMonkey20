@@ -282,7 +282,8 @@ router.get('/get_monthly', authenticate, (req, resp) => {
     const between_date = [data.period_from, data.period_to];
     //     console.log('data ', between_date);
 
-
+    //console.log('time in =', Date.now());
+    //var start1 = Date.now();
     loadData(data.station, between_date, station_name).then(result => {
 
         let result_parse0 = JSON.stringify(result[0]);
@@ -405,17 +406,17 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                         });
                         //time_in = up_sec;
                         if (!meteo_complete) {
-                            let meteo = dataList.filter((elem, i, arr) => {
+                            const meteo = [];
 
+                            for (var elem = 0; elem < dataList.length; elem++) {
+                                day_now = date.format(new Date(dataList[elem].date_time), 'DD-MM-YYYY');
 
-                                day_now = date.format(new Date(elem.date_time), 'DD-MM-YYYY');
-                                // console.log('base ' + time_now);
+                                if ((day_now == item) && ((dataList[elem].typemeasure == 'Направление ветра') || (dataList[elem].typemeasure == 'Интенс. осадков') ||
+                                    (dataList[elem].typemeasure == 'Влажность внеш.') || (dataList[elem].typemeasure == 'Скорость ветра') || (dataList[elem].typemeasure == 'Атм. давление') || (dataList[elem].typemeasure == 'Влажность внеш.') ||
+                                    (dataList[elem].typemeasure == 'Темп. внешняя')))
+                                    meteo.push(dataList[elem]);
+                            }
 
-
-                                return ((day_now == item) && ((elem.typemeasure == 'Направление ветра') || (elem.typemeasure == 'Интенс. осадков') ||
-                                    (elem.typemeasure == 'Влажность внеш.') || (elem.typemeasure == 'Скорость ветра') || (elem.typemeasure == 'Атм. давление') || (elem.typemeasure == 'Влажность внеш.') ||
-                                    (elem.typemeasure == 'Темп. внешняя')));
-                            });
 
                             //meteo avrg
                             if (meteo.length > 0) {
@@ -801,6 +802,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
             month: date.format(new Date(period_from), 'MM'), pollution: pollution
         });
         data.push({ station: station_name, values: values });
+        //console.log('time total =', Date.now() - start1);
 
         let response = {};
 
@@ -832,12 +834,15 @@ router.get('/get_tza4', authenticate, (req, resp) => {
     let meteo_add = data.checked_meteo;
     const between_date = [data.period_from, data.period_to];
     //console.log('chemical : ', chemic);
+    // console.log('time in =', Date.now());
+    //var start1 = Date.now();
     loadMeteo(data.station, between_date).then(_result => {
 
         let _result_parse0 = JSON.stringify(_result);
         let meteo_all = JSON.parse(_result_parse0);
         //console.log('result : ', meteo_all);
         loadData_tza(data.station, between_date, station_name, chemic).then(result => {
+            // console.log('time transaction =', Date.now() - start1);
 
             var result_parse0 = JSON.stringify(result[0]);
             var arr0 = JSON.parse(result_parse0);
@@ -913,7 +918,7 @@ router.get('/get_tza4', authenticate, (req, resp) => {
             });
 
             //if weather calculations
-            if ((chemical_one[0].measure_class != 'data')||(chemic == 'CO'))
+            if ((chemical_one[0].measure_class != 'data') || (chemic == 'CO'))
                 var signs = 1;
             else
                 var signs = 3;
@@ -944,17 +949,20 @@ router.get('/get_tza4', authenticate, (req, resp) => {
                         });
 
                         if (!meteo_complete) {
-                            let meteo = meteo_all.filter((elem, i, arr) => {
+                            const meteo = [];
 
-                                time_now = new Date(elem.date_time).getHours() * 3600 +
-                                    new Date(elem.date_time).getMinutes() * 60 + new Date(elem.date_time).getSeconds();                                // console.log('base ' + time_now);
-                                day_now = date.format(new Date(elem.date_time), 'DD-MM-YYYY');
+                            for (const elem in meteo_all) { // console.log('elem ', meteo_all[elem]) 
+                                time_now = new Date(meteo_all[elem].date_time).getHours() * 3600 + new Date(meteo_all[elem].date_time).getMinutes() * 60 +
+                                    new Date(meteo_all[elem].date_time).getSeconds();
+                                // console.log('base ' + time_now);
+                                day_now = date.format(new Date(meteo_all[elem].date_time), 'DD-MM-YYYY');
 
-
-                                return ((hour > time_now) && (time_in <= time_now) && (day_now == element) && ((elem.typemeasure == 'Направление ветра') || (elem.typemeasure == 'Интенс. осадков') ||
-                                    (elem.typemeasure == 'Влажность внеш.') || (elem.typemeasure == 'Скорость ветра') || (elem.typemeasure == 'Атм. давление') || (elem.typemeasure == 'Влажность внеш.') ||
-                                    (elem.typemeasure == 'Темп. внешняя')));
-                            });
+                                if ((hour > time_now) && (time_in <= time_now) && (day_now == element) && ((meteo_all[elem].typemeasure == 'Направление ветра') ||
+                                    (meteo_all[elem].typemeasure == 'Скорость ветра') ||
+                                    (meteo_all[elem].typemeasure == 'Влажность внеш.') || (meteo_all[elem].typemeasure == 'Темп. внешняя'))) {
+                                    meteo.push(meteo_all[elem]);
+                                }
+                            }
 
                             //meteo avrg
                             if (meteo.length > 0) {
@@ -1029,7 +1037,7 @@ router.get('/get_tza4', authenticate, (req, resp) => {
 
 
                                     if (item.measure >= macs_one.max_m) {
-                                        console.log('alert');
+                                        //console.log('alert');
 
                                         if (!alert_macs) {
                                             n_daily++;
@@ -1168,47 +1176,47 @@ router.get('/get_tza4', authenticate, (req, resp) => {
                     });
                 })
             } else {*/
-                let key = '';
-                tza4_templ.forEach((element, ind) => {
-                    pollution.push({
-                        time: element[0], P: element[1], h1: element[2].replace('.', ','), h2: element[3].replace('.', ','), h3: element[4].replace('.', ','), h4: element[5].replace('.', ','),
-                        h5: element[6].replace('.', ','), h6: element[7].replace('.', ','), h7: element[8].replace('.', ','), h8: element[9].replace('.', ','), h9: element[10].replace('.', ','), h10: element[11].replace('.', ','),
-                        h11: element[12].replace('.', ','), h12: element[13].replace('.', ','), h13: element[14].replace('.', ','), h14: element[15].replace('.', ','), h15: element[16].replace('.', ','), h16: element[17].replace('.', ','),
-                        h17: element[18].replace('.', ','), h18: element[19].replace('.', ','), h19: element[20].replace('.', ','), h20: element[21].replace('.', ','), h21: element[22].replace('.', ','),
-                        h22: element[23].replace('.', ','), h23: element[24].replace('.', ','), h24: element[25].replace('.', ','), SumQc: element[26].replace('.', ','), n: element[27], Qc: element[28].replace('.', ','),
-                        Qm: element[29].replace('.', ','), Tm: element[30], Tq: element[31], Temp: element[32].tempr, Hum: element[32].hum, Spd: element[32].spd, Dir: element[32].dir,
-                        Temp1:element[32].tempr[0].replace('.', ','),Temp2:element[32].tempr[1].replace('.', ','),Temp3:element[32].tempr[2].replace('.', ','), Temp4:element[32].tempr[3].replace('.', ','),
-                        Temp5:element[32].tempr[4].replace('.', ','), Temp6:element[32].tempr[5].replace('.', ','),Temp7:element[32].tempr[6].replace('.', ','), Temp8:element[32].tempr[7].replace('.', ','),
-                        Temp9:element[32].tempr[8].replace('.', ','), Temp10:element[32].tempr[9].replace('.', ','), Temp11:element[32].tempr[10].replace('.', ','), Temp12:element[32].tempr[11].replace('.', ','),
-                        Temp13:element[32].tempr[12].replace('.', ','), Temp14:element[32].tempr[13].replace('.', ','), Temp15:element[32].tempr[14].replace('.', ','),
-                        Temp16:element[32].tempr[15].replace('.', ','), Temp17:element[32].tempr[16].replace('.', ','), Temp18:element[32].tempr[17].replace('.', ','), Temp19:element[32].tempr[18].replace('.', ','),
-                        Temp20:element[32].tempr[19].replace('.', ','),Temp21:element[32].tempr[20].replace('.', ','), Temp22:element[32].tempr[21].replace('.', ','), Temp23:element[32].tempr[22].replace('.', ','),
-                        Temp24:element[32].tempr[23].replace('.', ','),
-                        Hum1:element[32].hum[0].replace('.', ','),Hum2:element[32].hum[1].replace('.', ','),Hum3:element[32].hum[2].replace('.', ','), Hum4:element[32].hum[3].replace('.', ','),
-                        Hum5:element[32].hum[4].replace('.', ','), Hum6:element[32].hum[5].replace('.', ','),Hum7:element[32].hum[6].replace('.', ','), Hum8:element[32].hum[7].replace('.', ','),
-                        Hum9:element[32].hum[8].replace('.', ','), Hum10:element[32].hum[9].replace('.', ','), Hum11:element[32].hum[10].replace('.', ','), Hum12:element[32].hum[11].replace('.', ','),
-                        Hum13:element[32].hum[12].replace('.', ','), Hum14:element[32].hum[13].replace('.', ','), Hum15:element[32].hum[14].replace('.', ','),
-                        Hum16:element[32].hum[15].replace('.', ','), Hum17:element[32].hum[16].replace('.', ','), Hum18:element[32].hum[17].replace('.', ','), Hum19:element[32].hum[18].replace('.', ','),
-                        Hum20:element[32].hum[19].replace('.', ','),Hum21:element[32].hum[20].replace('.', ','), Hum22:element[32].hum[21].replace('.', ','), Hum23:element[32].hum[22].replace('.', ','),
-                        Hum24:element[32].hum[23].replace('.', ','),
-                        Spd1:element[32].spd[0].replace('.', ','),Spd2:element[32].spd[1].replace('.', ','),Spd3:element[32].spd[2].replace('.', ','), Spd4:element[32].spd[3].replace('.', ','),
-                        Spd5:element[32].spd[4].replace('.', ','), Spd6:element[32].spd[5].replace('.', ','),Spd7:element[32].spd[6].replace('.', ','), Spd8:element[32].spd[7].replace('.', ','),
-                        Spd9:element[32].spd[8].replace('.', ','), Spd10:element[32].spd[9].replace('.', ','), Spd11:element[32].spd[10].replace('.', ','), Spd12:element[32].spd[11].replace('.', ','),
-                        Spd13:element[32].spd[12].replace('.', ','), Spd14:element[32].spd[13].replace('.', ','), Spd15:element[32].spd[14].replace('.', ','),
-                        Spd16:element[32].spd[15].replace('.', ','), Spd17:element[32].spd[16].replace('.', ','), Spd18:element[32].spd[17].replace('.', ','), Spd19:element[32].spd[18].replace('.', ','),
-                        Spd20:element[32].spd[19].replace('.', ','),Spd21:element[32].spd[20].replace('.', ','), Spd22:element[32].spd[21].replace('.', ','), Spd23:element[32].spd[22].replace('.', ','),
-                        Spd24:element[32].spd[23].replace('.', ','),
-                        Dir1:element[32].dir[0].replace('.', ','),Dir2:element[32].dir[1].replace('.', ','),Dir3:element[32].dir[2].replace('.', ','), Dir4:element[32].dir[3].replace('.', ','),
-                        Dir5:element[32].dir[4].replace('.', ','), Dir6:element[32].dir[5].replace('.', ','),Dir7:element[32].dir[6].replace('.', ','), Dir8:element[32].dir[7].replace('.', ','),
-                        Dir9:element[32].dir[8].replace('.', ','), Dir10:element[32].dir[9].replace('.', ','), Dir11:element[32].dir[10].replace('.', ','), Dir12:element[32].dir[11].replace('.', ','),
-                        Dir13:element[32].dir[12].replace('.', ','), Dir14:element[32].dir[13].replace('.', ','), Dir15:element[32].dir[14].replace('.', ','),
-                        Dir16:element[32].dir[15].replace('.', ','), Dir17:element[32].dir[16].replace('.', ','), Dir18:element[32].dir[17].replace('.', ','), Dir19:element[32].dir[18].replace('.', ','),
-                        Dir20:element[32].dir[19].replace('.', ','),Dir21:element[32].dir[20].replace('.', ','), Dir22:element[32].dir[21].replace('.', ','), Dir23:element[32].dir[22].replace('.', ','),
-                        Dir24:element[32].dir[23].replace('.', ',')
-                    });
-
-                    
+            let key = '';
+            tza4_templ.forEach((element, ind) => {
+                pollution.push({
+                    time: element[0], P: element[1], h1: element[2].replace('.', ','), h2: element[3].replace('.', ','), h3: element[4].replace('.', ','), h4: element[5].replace('.', ','),
+                    h5: element[6].replace('.', ','), h6: element[7].replace('.', ','), h7: element[8].replace('.', ','), h8: element[9].replace('.', ','), h9: element[10].replace('.', ','), h10: element[11].replace('.', ','),
+                    h11: element[12].replace('.', ','), h12: element[13].replace('.', ','), h13: element[14].replace('.', ','), h14: element[15].replace('.', ','), h15: element[16].replace('.', ','), h16: element[17].replace('.', ','),
+                    h17: element[18].replace('.', ','), h18: element[19].replace('.', ','), h19: element[20].replace('.', ','), h20: element[21].replace('.', ','), h21: element[22].replace('.', ','),
+                    h22: element[23].replace('.', ','), h23: element[24].replace('.', ','), h24: element[25].replace('.', ','), SumQc: element[26].replace('.', ','), n: element[27], Qc: element[28].replace('.', ','),
+                    Qm: element[29].replace('.', ','), Tm: element[30], Tq: element[31], Temp: element[32].tempr, Hum: element[32].hum, Spd: element[32].spd, Dir: element[32].dir,
+                    Temp1: String(element[32].tempr[0]).replace('.', ','), Temp2: String(element[32].tempr[1]).replace('.', ','), Temp3: String(element[32].tempr[2]).replace('.', ','), Temp4: String(element[32].tempr[3]).replace('.', ','),
+                    Temp5: String(element[32].tempr[4]).replace('.', ','), Temp6: String(element[32].tempr[5]).replace('.', ','), Temp7: String(element[32].tempr[6]).replace('.', ','), Temp8: String(element[32].tempr[7]).replace('.', ','),
+                    Temp9: String(element[32].tempr[8]).replace('.', ','), Temp10: String(element[32].tempr[9]).replace('.', ','), Temp11: String(element[32].tempr[10]).replace('.', ','), Temp12: String(element[32].tempr[11]).replace('.', ','),
+                    Temp13: String(element[32].tempr[12]).replace('.', ','), Temp14: String(element[32].tempr[13]).replace('.', ','), Temp15: String(element[32].tempr[14]).replace('.', ','),
+                    Temp16: String(element[32].tempr[15]).replace('.', ','), Temp17: String(element[32].tempr[16]).replace('.', ','), Temp18: String(element[32].tempr[17]).replace('.', ','), Temp19: String(element[32].tempr[18]).replace('.', ','),
+                    Temp20: String(element[32].tempr[19]).replace('.', ','), Temp21: String(element[32].tempr[20]).replace('.', ','), Temp22: String(element[32].tempr[21]).replace('.', ','), Temp23: String(element[32].tempr[22]).replace('.', ','),
+                    Temp24: String(element[32].tempr[23]).replace('.', ','),
+                    Hum1: String(element[32].hum[0]).replace('.', ','), Hum2: String(element[32].hum[1]).replace('.', ','), Hum3: String(element[32].hum[2]).replace('.', ','), Hum4: String(element[32].hum[3]).replace('.', ','),
+                    Hum5: String(element[32].hum[4]).replace('.', ','), Hum6: String(element[32].hum[5]).replace('.', ','), Hum7: String(element[32].hum[6]).replace('.', ','), Hum8: String(element[32].hum[7]).replace('.', ','),
+                    Hum9: String(element[32].hum[8]).replace('.', ','), Hum10: String(element[32].hum[9]).replace('.', ','), Hum11: String(element[32].hum[10]).replace('.', ','), Hum12: String(element[32].hum[11]).replace('.', ','),
+                    Hum13: String(element[32].hum[12]).replace('.', ','), Hum14: String(element[32].hum[13]).replace('.', ','), Hum15: String(element[32].hum[14]).replace('.', ','),
+                    Hum16: String(element[32].hum[15]).replace('.', ','), Hum17: String(element[32].hum[16]).replace('.', ','), Hum18: String(element[32].hum[17]).replace('.', ','), Hum19: String(element[32].hum[18]).replace('.', ','),
+                    Hum20: String(element[32].hum[19]).replace('.', ','), Hum21: String(element[32].hum[20]).replace('.', ','), Hum22: String(element[32].hum[21]).replace('.', ','), Hum23: String(element[32].hum[22]).replace('.', ','),
+                    Hum24: String(element[32].hum[23]).replace('.', ','),
+                    Spd1: String(element[32].spd[0]).replace('.', ','), Spd2: String(element[32].spd[1]).replace('.', ','), Spd3: String(element[32].spd[2]).replace('.', ','), Spd4: String(element[32].spd[3]).replace('.', ','),
+                    Spd5: String(element[32].spd[4]).replace('.', ','), Spd6: String(element[32].spd[5]).replace('.', ','), Spd7: String(element[32].spd[6]).replace('.', ','), Spd8: String(element[32].spd[7]).replace('.', ','),
+                    Spd9: String(element[32].spd[8]).replace('.', ','), Spd10: String(element[32].spd[9]).replace('.', ','), Spd11: String(element[32].spd[10]).replace('.', ','), Spd12: String(element[32].spd[11]).replace('.', ','),
+                    Spd13: String(element[32].spd[12]).replace('.', ','), Spd14: String(element[32].spd[13]).replace('.', ','), Spd15: String(element[32].spd[14]).replace('.', ','),
+                    Spd16: String(element[32].spd[15]).replace('.', ','), Spd17: String(element[32].spd[16]).replace('.', ','), Spd18: String(element[32].spd[17]).replace('.', ','), Spd19: String(element[32].spd[18]).replace('.', ','),
+                    Spd20: String(element[32].spd[19]).replace('.', ','), Spd21: String(element[32].spd[20]).replace('.', ','), Spd22: String(element[32].spd[21]).replace('.', ','), Spd23: String(element[32].spd[22]).replace('.', ','),
+                    Spd24: String(element[32].spd[23]).replace('.', ','),
+                    Dir1: String(element[32].dir[0]).replace('.', ','), Dir2: String(element[32].dir[1]).replace('.', ','), Dir3: String(element[32].dir[2]).replace('.', ','), Dir4: String(element[32].dir[3]).replace('.', ','),
+                    Dir5: String(element[32].dir[4]).replace('.', ','), Dir6: String(element[32].dir[5]).replace('.', ','), Dir7: String(element[32].dir[6]).replace('.', ','), Dir8: String(element[32].dir[7]).replace('.', ','),
+                    Dir9: String(element[32].dir[8]).replace('.', ','), Dir10: String(element[32].dir[9]).replace('.', ','), Dir11: String(element[32].dir[10]).replace('.', ','), Dir12: String(element[32].dir[11]).replace('.', ','),
+                    Dir13: String(element[32].dir[12]).replace('.', ','), Dir14: String(element[32].dir[13]).replace('.', ','), Dir15: String(element[32].dir[14]).replace('.', ','),
+                    Dir16: String(element[32].dir[15]).replace('.', ','), Dir17: String(element[32].dir[16]).replace('.', ','), Dir18: String(element[32].dir[17]).replace('.', ','), Dir19: String(element[32].dir[18]).replace('.', ','),
+                    Dir20: String(element[32].dir[19]).replace('.', ','), Dir21: String(element[32].dir[20]).replace('.', ','), Dir22: String(element[32].dir[21]).replace('.', ','), Dir23: String(element[32].dir[22]).replace('.', ','),
+                    Dir24: String(element[32].dir[23]).replace('.', ',')
                 });
+
+
+            });
             //}
             //values.push(measure);
             values.push({
@@ -1224,6 +1232,8 @@ router.get('/get_tza4', authenticate, (req, resp) => {
             data.push({ station: station_name, values: values });
 
             let response = {};
+
+            //console.log('time total =', Date.now() - start1);
 
             response.meteo = tza4_templ_meteo;
             response.tza4 = tza4_templ;
@@ -1251,6 +1261,8 @@ router.get('/get_tza4', authenticate, (req, resp) => {
 
 
 export default router;
+
+
 
 
 

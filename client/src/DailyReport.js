@@ -743,7 +743,7 @@ class DailyReport extends React.Component {
             <Paper >
                 <br />
                 <MenuReport
-                    {...this.props} snack_msg={snack_msg} isLoading={isLoading}
+                    {...this.props} snack_msg={snack_msg} isLoading={isLoading} autoHideDuration ={3000}
                     station_name={this.state.station_name}
                     station_actual={this.state.station_actual}
                     //dateReportBegin={this.state.dateReportBegin}

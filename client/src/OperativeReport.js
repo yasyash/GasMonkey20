@@ -404,7 +404,7 @@ class OperativeReport extends React.Component {
             <Paper >
                 <br />
                 <MenuReport
-                    {...this.props} snack_msg={snack_msg} isLoading={isLoading}
+                    {...this.props} snack_msg={snack_msg} isLoading={isLoading} autoHideDuration={3000}
                     station_name={this.state.station_name}
                     dateReportBegin={this.state.dateTimeBegin}
                     dateReportEnd={this.state.dateTimeEnd}

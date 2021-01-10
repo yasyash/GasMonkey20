@@ -119,7 +119,8 @@ class MonthlyReport extends React.Component {
                 'U': 'Напряжение питания',
                 'Dr': 'Дверь',
                 'Fr': 'Пожар'
-            }
+            },
+            autoHideDuration:3000
         };
 
         //first init
@@ -194,7 +195,8 @@ class MonthlyReport extends React.Component {
         params.station = state.station_actual;
         params.station_name = state.station_name;
         params.get = true;
-
+        this.setState({ isLoading: true });
+        this.setState({autoHideDuration: 200000, snack_msg: 'Дождитесь завершения операции...' });
         reportGet_monthly(params).then(resp => {
             if (resp) {
 
@@ -212,11 +214,11 @@ class MonthlyReport extends React.Component {
                 this.setState({ 'avrg_measure': avrg_measure });
 
                 this.setState({ isLoading: true });
-                this.setState({ snack_msg: 'Данные успешно загружены...' });
+                this.setState({autoHideDuration: 3000, snack_msg: 'Данные успешно загружены...' });
             }
             else {
                 this.setState({ isLoading: false })
-                this.setState({ snack_msg: 'Данные отсутствуют...' })
+                this.setState({autoHideDuration: 3000, snack_msg: 'Данные отсутствуют...' })
 
             };
 
@@ -245,7 +247,7 @@ class MonthlyReport extends React.Component {
         const { classes } = this.props;
         const { data_raw } = this.state;
         const { avrg_measure } = this.state;
-        const { snack_msg, isLoading } = this.state;
+        const { snack_msg, isLoading, autoHideDuration } = this.state;
         const alert = 'ТРЕВОГА';
         const norm = 'отсутствует';
 
@@ -298,7 +300,7 @@ class MonthlyReport extends React.Component {
             <Paper >
                 <br />
                 <MenuReport
-                    {...this.props} snack_msg={snack_msg} isLoading={isLoading}
+                    {...this.props} snack_msg={snack_msg} isLoading={isLoading} autoHideDuration={autoHideDuration}
                     station_name={this.state.station_name}
                     station_actual={this.state.station_actual}
                     //dateReportBegin={this.state.dateReportBegin}
