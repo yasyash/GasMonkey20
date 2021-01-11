@@ -120,7 +120,7 @@ class MonthlyReport extends React.Component {
                 'Dr': 'Дверь',
                 'Fr': 'Пожар'
             },
-            autoHideDuration:3000
+            autoHideDuration: 3000
         };
 
         //first init
@@ -191,12 +191,15 @@ class MonthlyReport extends React.Component {
         else {
             params.period_from = state.dateReportBegin;
             params.period_to = state.dateReportEnd;
-        };
+            this.setState({
+                dateReportBegin: state.dateReportBegin, dateReportEnd: state.dateReportEnd
+            });
+        }
         params.station = state.station_actual;
         params.station_name = state.station_name;
         params.get = true;
         this.setState({ isLoading: true });
-        this.setState({autoHideDuration: 200000, snack_msg: 'Дождитесь завершения операции...' });
+        this.setState({ autoHideDuration: 200000, snack_msg: 'Дождитесь завершения операции...' });
         reportGet_monthly(params).then(resp => {
             if (resp) {
 
@@ -214,11 +217,11 @@ class MonthlyReport extends React.Component {
                 this.setState({ 'avrg_measure': avrg_measure });
 
                 this.setState({ isLoading: true });
-                this.setState({autoHideDuration: 3000, snack_msg: 'Данные успешно загружены...' });
+                this.setState({ autoHideDuration: 3000, snack_msg: 'Данные успешно загружены...' });
             }
             else {
                 this.setState({ isLoading: false })
-                this.setState({autoHideDuration: 3000, snack_msg: 'Данные отсутствуют...' })
+                this.setState({ autoHideDuration: 3000, snack_msg: 'Данные отсутствуют...' })
 
             };
 
