@@ -873,7 +873,8 @@ class MenuReport extends Component {
                                 id="dateReportBegin"
                                 label="дата отчета"
                                 type="date"
-                                defaultValue={new Date().format('Y-MM-dd')}
+                                defaultValue={new Date(this.props.dateReportBegin).format('Y-MM-dd')}
+                                value ={new Date(this.props.dateReportBegin).format('Y-MM-dd')}
                                 className={classes.textField}
                                 // selectProps={this.state.dateReportBegin}
                                 onChange={(event) => { this.handlePickerChange(event) }}
@@ -886,8 +887,9 @@ class MenuReport extends Component {
                             id="dateReportBegin"
                             label="дата отчета"
                             type="month"
-                            defaultValue={new Date().format('Y-MM')}
+                            defaultValue={new Date(this.props.dateReportBegin).format('Y-MM')}
                             className={classes.textFieldWide}
+                            value ={new Date(this.props.dateReportBegin).format('Y-MM')}
                             // selectProps={this.state.dateReportBegin}
                             onChange={(event) => { this.handlePickerChange(event) }}
                             InputLabelProps={{
@@ -901,7 +903,8 @@ class MenuReport extends Component {
                             id="dateReportBegin"
                             label="дата отчета"
                             type="month"
-                            defaultValue={new Date().format('Y-MM')}
+                            defaultValue={new Date(this.props.dateReportBegin).format('Y-MM')}
+                            value ={new Date(this.props.dateReportBegin).format('Y-MM')}
                             className={classes.textFieldWide}
                             // selectProps={this.state.dateReportBegin}
                             onChange={(event) => { this.handlePickerChange(event) }}
@@ -995,17 +998,8 @@ class MenuReport extends Component {
 
 function mapStateToProps(state) {
     return {
-        /*  fixedHeader: state.fixedHeader,
-          fixedFooter: state.fixedFooter,
-          stripedRows: state.stripedRows,
-          showRowHover: state.showRowHover,
-          selectable: state.selectable,
-          multiSelectable: state.multiSelectable,
-          enableSelectAll: state.enableSelectAll,
-          deselectOnClickaway: state.deselectOnClickaway,
-          showCheckboxes: state.showCheckboxes,
-          height: state.height*/
-
+        dateReportBegin: state.datePickers.dateReportBegin,
+        dateReportEnd: state.datePickers.dateReportEnd
 
     };
 }
@@ -1015,4 +1009,4 @@ MenuReport.propTypes = {
     classes: PropTypes.object.isRequired
 }
 
-export default (withStyles(styles)(MenuReport));
+export default connect(mapStateToProps) (withStyles(styles)(MenuReport));
