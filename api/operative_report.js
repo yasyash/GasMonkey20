@@ -202,28 +202,55 @@ function daysInMonth(month) {
 };
 
 async function loadData(station, between_date, station_name) {
-
+    var qry = " sensors_data.typemeasure in (select equipments.typemeasure from equipments where idd = '" + station + "' and equipments.measure_class = 'data')";
     //consoleconsole.log('loadData');
     let data = await Promise.join(
         Data.query('whereBetween', 'date_time', between_date)
             .query('where', 'idd', station)
+            .query({
+                andWhereRaw: (qry)
+            })
             .orderBy('date_time', 'ASC').fetchAll()
-            .catch(err => resp.status(500).json({ error: err })),
+            .catch(err => {
+                console.log(err);
+                return []
+            }),
         Sensors.query({
             select: ['serialnum', 'typemeasure', 'unit_name', 'is_wind_sensor'],
             where: ({ is_present: true }),
             andWhere: ({ idd: station }),
         })
             .fetchAll()
-            .catch(err => resp.status(500).json({ error: err })),
+            .catch(err => {
+                console.log(err);
+                return []
+            }),
         Macs.fetchAll()
-            .catch(err => resp.status(500).json({ error: err })),
-        ((data_list, data_sensors, consentration) => {
-            let data = [data_list, data_sensors, consentration];
+            .catch(err => {
+                console.log(err);
+                return []
+            }),
+        Data.query('whereBetween', 'date_time', between_date)
+            .query('where', 'idd', station)
+            .query({
+                andWhereRaw: ("((date_time::varchar like '%:%0:%') or (date_time::varchar like '%:%5:%') ) and (typemeasure = 'Направление ветра' or typemeasure = 'Интенс. осадков' or typemeasure = 'Влажность внеш.' or typemeasure = 'Скорость ветра' or typemeasure = 'Атм. давление' or typemeasure = 'Темп. внешняя')")
+            })
+            .orderBy('date_time', 'ASC').fetchAll()
+            .catch(err => {
+                console.log(err);
+                return []
+            }),
+        ((data_list, data_sensors, consentration, meteo) => {
+            let data = [data_list, data_sensors, consentration, meteo];
             return data;
         })
+
     )
-        .catch(err => resp.status(500).json({ error: err }));
+        .catch(err => {
+            console.log(err);
+            return []
+        });
+
     return data;
 
 };
@@ -233,14 +260,26 @@ async function loadMeteo(station, between_date) {
     //console.log('between', between_date, 'station ', station);
     let data = await Data.query('whereBetween', 'date_time', between_date)
         .query('where', 'idd', station)
+        .query({
+            andWhereRaw: ("(date_time::varchar like  '%:%5:%' or  date_time::varchar like '%:%0:%')")
+        })
         .orderBy('date_time', 'ASC').fetchAll()
-        .catch(err => resp.status(500).json({ error: err }));
+        .catch(err => {
+            console.log(err);
+            return []
+        });
+    // console.log('data len ' + data.length);
+    let result_parse = JSON.stringify(data);
+    let arr = JSON.parse(result_parse);
+    const _data = [];
+    for (const ind in arr) {
+        if ((arr[ind].typemeasure == 'Направление ветра') || (arr[ind].typemeasure == 'Интенс. осадков') || (arr[ind].typemeasure == 'Влажность внеш.') ||
+            (arr[ind].typemeasure == 'Скорость ветра') || (arr[ind].typemeasure == 'Атм. давление') || (arr[ind].typemeasure == 'Темп. внешняя')) {
+            _data.push(arr[ind]);
+        }
 
-
-    return data;
-
-
-
+    }
+    return _data;
 };
 
 async function loadData_tza(station, between_date, station_name, chemic) {
@@ -280,7 +319,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
     let station_name = data.station_name;
 
     const between_date = [data.period_from, data.period_to];
-    //     console.log('data ', between_date);
+         //console.log('data ', between_date);
 
     //console.log('time in =', Date.now());
     //var start1 = Date.now();
@@ -292,6 +331,12 @@ router.get('/get_monthly', authenticate, (req, resp) => {
         let arr1 = JSON.parse(result_parse1);
         let result_parse2 = JSON.stringify(result[2]);
         let arr2 = JSON.parse(result_parse2);
+        let result_parse3 = JSON.stringify(result[3]);
+        let _meteo = JSON.parse(result_parse3);
+
+        //console.log("quantity = ", _meteo.length)
+        //console.log('time transaction =', Date.now() - start1);
+
 
         const template_chemical = ['NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол'];
         const chemical_classes = { //classes dangerous
@@ -408,13 +453,11 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                         if (!meteo_complete) {
                             const meteo = [];
 
-                            for (var elem = 0; elem < dataList.length; elem++) {
-                                day_now = date.format(new Date(dataList[elem].date_time), 'DD-MM-YYYY');
+                            for (var elem = 0; elem < _meteo.length; elem++) {
+                                day_now = date.format(new Date(_meteo[elem].date_time), 'DD-MM-YYYY');
 
-                                if ((day_now == item) && ((dataList[elem].typemeasure == 'Направление ветра') || (dataList[elem].typemeasure == 'Интенс. осадков') ||
-                                    (dataList[elem].typemeasure == 'Влажность внеш.') || (dataList[elem].typemeasure == 'Скорость ветра') || (dataList[elem].typemeasure == 'Атм. давление') || (dataList[elem].typemeasure == 'Влажность внеш.') ||
-                                    (dataList[elem].typemeasure == 'Темп. внешняя')))
-                                    meteo.push(dataList[elem]);
+                                if ((day_now == item) )
+                                    meteo.push(_meteo[elem]);
                             }
 
 
@@ -796,6 +839,9 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                 });
             }
         });
+
+        //console.log('time total =', Date.now() - start1);
+
         //values.push(measure);
         values.push({
             year: date.format(new Date(period_from), 'YYYY'),
@@ -834,15 +880,15 @@ router.get('/get_tza4', authenticate, (req, resp) => {
     let meteo_add = data.checked_meteo;
     const between_date = [data.period_from, data.period_to];
     //console.log('chemical : ', chemic);
-    // console.log('time in =', Date.now());
+    //console.log('time in =', Date.now());
     //var start1 = Date.now();
     loadMeteo(data.station, between_date).then(_result => {
 
-        let _result_parse0 = JSON.stringify(_result);
-        let meteo_all = JSON.parse(_result_parse0);
-        //console.log('result : ', meteo_all);
+        //let _result_parse0 = JSON.stringify(_result);
+        let meteo_all = _result;
+        //console.log('result : ', meteo_all.length);
         loadData_tza(data.station, between_date, station_name, chemic).then(result => {
-            // console.log('time transaction =', Date.now() - start1);
+            //console.log('time transaction =', Date.now() - start1);
 
             var result_parse0 = JSON.stringify(result[0]);
             var arr0 = JSON.parse(result_parse0);
@@ -954,7 +1000,6 @@ router.get('/get_tza4', authenticate, (req, resp) => {
                             for (const elem in meteo_all) { // console.log('elem ', meteo_all[elem]) 
                                 time_now = new Date(meteo_all[elem].date_time).getHours() * 3600 + new Date(meteo_all[elem].date_time).getMinutes() * 60 +
                                     new Date(meteo_all[elem].date_time).getSeconds();
-                                // console.log('base ' + time_now);
                                 day_now = date.format(new Date(meteo_all[elem].date_time), 'DD-MM-YYYY');
 
                                 if ((hour > time_now) && (time_in <= time_now) && (day_now == element) && ((meteo_all[elem].typemeasure == 'Направление ветра') ||
