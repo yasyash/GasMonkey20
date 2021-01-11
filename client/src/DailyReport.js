@@ -209,6 +209,8 @@ class DailyReport extends React.Component {
                 let dataList = data.dataTable;
                 let sensorsList = data.sensorsTable;
                 let macsList = data.macsTable;
+                let _meteo = data.meteo;
+
                 let avrg_measure = [];
                 let data_raw = [];
                 let times = 0;
@@ -291,16 +293,14 @@ class DailyReport extends React.Component {
                                 });
 
                                 if (!meteo_complete) {
-                                    let meteo = dataList.filter((elem, i, arr) => {
+                                    let meteo = _meteo.filter((elem, i, arr) => {
 
                                         time_now = new Date(elem.date_time).getHours() * 3600 +
                                             new Date(elem.date_time).getMinutes() * 60 + new Date(elem.date_time).getSeconds();
                                         // console.log('base ' + time_now);
 
 
-                                        return ((up_sec >= time_now) && (time_in <= time_now) && ((elem.typemeasure == 'Направление ветра') || (elem.typemeasure == 'Интенс. осадков') ||
-                                            (elem.typemeasure == 'Влажность внеш.') || (elem.typemeasure == 'Скорость ветра') || (elem.typemeasure == 'Атм. давление') || (elem.typemeasure == 'Влажность внеш.') ||
-                                            (elem.typemeasure == 'Темп. внешняя')));
+                                        return ((up_sec >= time_now) && (time_in <= time_now) );
                                     });
 
                                     //meteo avrg
