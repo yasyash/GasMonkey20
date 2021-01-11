@@ -202,7 +202,7 @@ function daysInMonth(month) {
 };
 
 async function loadData(station, between_date, station_name) {
-    var qry = " sensors_data.typemeasure in (select equipments.typemeasure from equipments where idd = '" + station + "' and equipments.measure_class = 'data')";
+    var qry = "((date_time::varchar like '%:%0:%') or (date_time::varchar like '%:%2:%') or (date_time::varchar like '%:%4:%') or (date_time::varchar like '%:%6:%') or (date_time::varchar like '%:%8:%') ) AND sensors_data.typemeasure in (select equipments.typemeasure from equipments where idd = '" + station + "' and equipments.measure_class = 'data')";
     //consoleconsole.log('loadData');
     let data = await Promise.join(
         Data.query('whereBetween', 'date_time', between_date)
@@ -283,29 +283,44 @@ async function loadMeteo(station, between_date) {
 };
 
 async function loadData_tza(station, between_date, station_name, chemic) {
-
+    var qry = "((date_time::varchar like '%:%0:%') or (date_time::varchar like '%:%2:%') or (date_time::varchar like '%:%4:%') or (date_time::varchar like '%:%6:%') or (date_time::varchar like '%:%8:%') ) ";
     //consoleconsole.log('loadData');
     let data = await Promise.join(
         Data.query('whereBetween', 'date_time', between_date)
             .query('where', 'idd', station)
             .query('where', 'typemeasure', chemic)
+            .query({
+                andWhereRaw: (qry)
+            })
             .orderBy('date_time', 'ASC').fetchAll()
-            .catch(err => resp.status(500).json({ error: err })),
+            .catch(err => {
+                console.log(err);
+                return []
+            }),
         Sensors.query({
             select: ['serialnum', 'typemeasure', 'unit_name', 'measure_class'],
             where: ({ is_present: true }),
             andWhere: ({ idd: station }),
         })
             .fetchAll()
-            .catch(err => resp.status(500).json({ error: err })),
+            .catch(err => {
+                console.log(err);
+                return []
+            }),
         Macs.fetchAll()
-            .catch(err => resp.status(500).json({ error: err })),
+            .catch(err => {
+                console.log(err);
+                return []
+            }),
         ((data_list, data_sensors, consentration) => {
             let data = [data_list, data_sensors, consentration];
             return data;
         })
     )
-        .catch(err => resp.status(500).json({ error: err }));
+        .catch(err => {
+            console.log(err);
+            return []
+        });
     return data;
 
 };
