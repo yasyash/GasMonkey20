@@ -185,8 +185,13 @@ class MonthlyReport extends React.Component {
 
         //const template_chemical = ['NO', 'NO2', 'SO2', 'H2S', 'O3', 'CO', 'PM2.5', 'PM10'];
         if (isEmpty(state.dateReportBegin)) {
-            params.period_from = this.state.dateReportBegin;
-            params.period_to = this.state.dateReportEnd;
+            if (!isEmpty(this.props.dateReportBegin)) {
+                params.period_from = new Date(new Date(this.props.dateReportBegin).getFullYear(), new Date(this.props.dateReportBegin).getMonth(), 1, '0', '0').format('Y-MM-ddTHH:mm');
+                params.period_to = this.props.dateReportEnd;
+            } else {
+                params.period_from = this.state.dateReportBegin;
+                params.period_to = this.state.dateReportEnd;
+            }
         }
         else {
             params.period_from = state.dateReportBegin;
