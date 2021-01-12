@@ -236,7 +236,7 @@ class DashBoard extends Component {
 
             //20 min averaging 
 
-            
+
 
             //packing alerts
             //console.log('Date = ', alertsList);
@@ -402,7 +402,7 @@ class DashBoard extends Component {
 
                   ))}
 
-{(macsList) &&
+                {(macsList) &&
                   macsList.map((element, j) => (
                     (sensorsList.length > 0) && (
                       filter = sensorsList.filter((opt, k, arr) => {
@@ -414,7 +414,7 @@ class DashBoard extends Component {
                         return ((opt.typemeasure == element.chemical) && (opt.id == item.id));
                       })
                     ),
-                    (_filter.length > 0) && ( filter =[] ),
+                    (_filter.length > 0) && (filter = []),
 
 
 
@@ -704,36 +704,77 @@ class DashBoard extends Component {
 
 
                   ))}
- <hr style={{ width: "80%", size: "1" }} />
 
-{(weatherList) &&
-  weatherList.map((element, j) => (
-    _type_measure = sensorsList.filter((_tm_item, _indx) => {
-      return (_tm_item.typemeasure == element.typemeasure);
-    }),
-    ((weatherList.length > 0) && (measure = element.measure)),
-    (weatherList.length > 0) && (<GridItem xs={3} sm={3} md={3} key={item.namestation + '_' + _type_measure[0].typemeasure}>
-      <Card>
-        <CardHeader stats icon >
-          <CardIcon color={element.is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
-            <Weather />
-          </CardIcon>
-          <p className={classes.cardCategory}>Среднее (20 мин.) : {measure.toFixed(1)} {_type_measure[0].unit_name}</p>
-          <h3 className={classes.cardTitle}>{_type_measure[0].typemeasure}</h3>
-          <p className={classes.cardCategory}>Мгновенное : {element.momental_measure.toFixed(1)} {_type_measure[0].unit_name}</p>
-
-        </CardHeader>
-        <CardFooter stats>
-          <div className={classes.stats}>
-            <Place />
-            {item.place} </div>
-        </CardFooter>
-      </Card>
-
-    </GridItem>)
+                {(macsList) &&
+                  macsList.map((element, j) => (
+                    (sensorsList.length > 0) && (
+                      filter = sensorsList.filter((opt, k, arr) => {
+                        return ((opt.typemeasure == element.chemical) && (opt.id == item.id));
+                      })
+                    ),
+                    (filter.length > 0) && (
+                      _filter = dataList.filter((opt, k, arr) => {
+                        return ((opt.typemeasure == element.chemical) && (opt.id == item.id));
+                      })
+                    ),
+                    (_filter.length > 0) && (filter = []),
 
 
-  ))}
+
+
+                    (filter.length > 0) && (<GridItem xs={3} sm={3} md={3} key={item.namestation + '_' + filter[0].typemeasure}>
+                      <Card>
+                        <CardHeader stats icon  >
+                          <CardIcon color={"info"} style={{ padding: "5px", color: "lightgrey" }}  >
+                            <CloudOffIcon />
+                          </CardIcon>
+
+
+                          <h3 className={classes.cardTitle}>{filter[0].typemeasure}</h3>
+                          <p className={classes.cardCategory}>Отключен...</p>
+
+                        </CardHeader>
+                        <CardFooter stats>
+                          <div className={classes.stats}>
+                            <Place />
+                            {item.place} </div>
+                        </CardFooter>
+                      </Card>
+
+                    </GridItem>)
+
+
+                  ))}
+                <hr style={{ width: "80%", size: "1" }} />
+
+                {(weatherList) &&
+                  weatherList.map((element, j) => (
+                    _type_measure = sensorsList.filter((_tm_item, _indx) => {
+                      return (_tm_item.typemeasure == element.typemeasure);
+                    }),
+                    ((weatherList.length > 0) && (measure = element.measure)),
+                    (weatherList.length > 0) && (<GridItem xs={3} sm={3} md={3} key={item.namestation + '_' + _type_measure[0].typemeasure}>
+                      <Card>
+                        <CardHeader stats icon >
+                          <CardIcon color={element.is_alert ? "danger" : "info"} style={{ padding: "5px" }} >
+                            <Weather />
+                          </CardIcon>
+                          <p className={classes.cardCategory}>Среднее (20 мин.) : {measure.toFixed(1)} {_type_measure[0].unit_name}</p>
+                          <h3 className={classes.cardTitle}>{_type_measure[0].typemeasure}</h3>
+                          <p className={classes.cardCategory}>Мгновенное : {element.momental_measure.toFixed(1)} {_type_measure[0].unit_name}</p>
+
+                        </CardHeader>
+                        <CardFooter stats>
+                          <div className={classes.stats}>
+                            <Place />
+                            {item.place} </div>
+                        </CardFooter>
+                      </Card>
+
+                    </GridItem>)
+
+
+                  ))}
               </GridContainer >
 
             )
