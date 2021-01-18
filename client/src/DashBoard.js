@@ -131,11 +131,17 @@ class DashBoard extends Component {
     }
   }
 
+  handleTabsChange  (event)  {
+    this.interval = setInterval(this.renderData.bind(this), 30000);
+
+  }
+
   handlePickerChange = (event) => {
     const value = event.target.value;
     const id = event.target.id;
+    clearInterval(this.interval);
 
-    this.setState({ dateTimeAlerts: value, dateTimeBegin: new Date(value).format('Y-MM-dd') + 'T00:00:00', dateTimeEnd: new Date(value).format('Y-MM-dd') + 'T23:59:59' });
+    this.setState({ dateTimeAlerts: value });//, dateTimeBegin: new Date(value).format('Y-MM-dd') + 'T00:00:00', dateTimeEnd: new Date(value).format('Y-MM-dd') + 'T23:59:59' });
     this.renderData(value);
     //dateAddAction({ [id]: value });
   };
@@ -818,13 +824,13 @@ class DashBoard extends Component {
     }
     return (
 
-      <div>
+      <div onClick={this.handleTabsChange.bind(this)}>
 
 
         <Tabs
           title="Станции наблюдения:"
           headerColor="info"
-
+          
           tabs={tabs} />
       </div >
 

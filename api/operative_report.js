@@ -574,7 +574,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                                 max_time_sum = item;
                             }
 
-                            if (sum > element.max_d)
+                            if (sum > element.max_d) //element.max_d may be changed to max_m on Krasnoyarsk demand
                                 counter_macs1++;
                             if ((sum / 5) >= element.max_d)
                                 counter_macs5++;

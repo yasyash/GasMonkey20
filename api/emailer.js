@@ -71,7 +71,7 @@ function cron_email() {
                                                         },
 
                                                     });
-                                                    // var last_time = _time;//resp_str[resp_str.lenght -1].date_time
+                                                    // var last_time = _time;//resp_str[resp_str.length -1].date_time
 
 
                                                     //resp_str.forEach(element => {
@@ -85,7 +85,7 @@ function cron_email() {
                                                             var logs_list = resp_str.filter((item, _i, arr) => {
                                                                 return ((item.type == i) && (_equipment.serialnum == item.idd));
                                                             });
-                                                            //console.log('logs _ list lenght = ', logs_list.length);
+                                                            //console.log('logs _ list length = ', logs_list.length);
                                                             if (logs_list.length > 0) {
                                                                 var _station = stations.filter((_item, _i, arr) => {
                                                                     return ((_equipment.idd == _item.idd));
