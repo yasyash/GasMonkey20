@@ -41,6 +41,7 @@ import SnackbarContent from "./stuff/SnackbarContent";
 //import SnackbarContent from '@material-ui/core/SnackbarContent';
 import WarningIcon from '@material-ui/icons/Warning';
 import Divider from '@material-ui/core/Divider';
+import HistoryToggleOffTwoToneIcon from './icons/HistoryToggleOffTwoTone';
 
 import isEmpty from 'lodash.isempty';
 import CloudyIcon from '@material-ui/icons/WbCloudy';
@@ -55,7 +56,7 @@ import dashboardStyle from "material-dashboard-react/assets/jss/material-dashboa
 
 import * as _materialDashboardReact from "material-dashboard-react/assets/jss/material-dashboard-react";
 
-import { queryDashBoardDataOperativeEvent, queryAllDataOperativeEvent, queryEvent, queryMeteoEvent } from './actions/queryActions';
+import { queryDashBoardDataOperativeEvent, queryDashBoardAlertsHistory, queryAllDataOperativeEvent, queryEvent, queryMeteoEvent } from './actions/queryActions';
 import { addLogsList, deleteLogsList } from './actions/logsAddActions';
 //import { filter } from 'ramda';
 //import auth from './reducers/auth';
@@ -119,30 +120,32 @@ class DashBoard extends Component {
       systemList: [],
       dateTimeBegin: new Date(today).format('Y-MM-ddTHH:mm'),
       dateTimeEnd: new Date().format('Y-MM-ddTHH:mm'),
-      dateTimeAlerts: new Date().format('Y-MM-dd'),
+      dateTimeAlerts: new Date(new Date() - 86400000).format('Y-MM-dd'),
       open: false,
       anchorEl: null,
       mobileOpen: true,
       door_alert: [],
       fire_alert: [],
-      time_frame: []
+      time_frame: [],
+      alertsHistoryList: [],
+      systemHistoryList: []
 
 
     }
   }
 
-  handleTabsChange  (event)  {
-    this.interval = setInterval(this.renderData.bind(this), 30000);
+  handleTabsChange = (event, value) => {
+    // this.interval = setInterval(this.renderData.bind(this), 30000);
 
   }
 
   handlePickerChange = (event) => {
     const value = event.target.value;
     const id = event.target.id;
-    clearInterval(this.interval);
+    //clearInterval(this.interval);
 
     this.setState({ dateTimeAlerts: value });//, dateTimeBegin: new Date(value).format('Y-MM-dd') + 'T00:00:00', dateTimeEnd: new Date(value).format('Y-MM-dd') + 'T23:59:59' });
-    this.renderData(value);
+    this.renderHistoricalData(value);
     //dateAddAction({ [id]: value });
   };
 
@@ -167,6 +170,15 @@ class DashBoard extends Component {
     //console.log(data);
     return data;
   };
+
+  async    load_history_data(params) {
+
+
+    let data = await (this.props.queryDashBoardAlertsHistory(params));
+    //console.log(data);
+    return data;
+  };
+
   onClose = indx => () => {
     const { systemList } = this.props;
     if (!isEmpty(systemList)) {
@@ -322,8 +334,114 @@ class DashBoard extends Component {
 
     };
   }
+
+  ///historical data rendering 
+  renderHistoricalData(_date) {
+    if (!isEmpty(this.props.username)) {
+      let params = {};
+
+
+      params.period_from = new Date(_date).format('Y-MM-dd') + 'T00:00:00';
+      params.period_to = new Date(_date).format('Y-MM-dd') + 'T23:59:59';
+
+
+      this.load_history_data(params).then(data => {
+        if (data) {
+          //console.log("Time entry = ", Date.parse(new Date()));
+          //let dataList = data.dataTable;
+          //let sensorsList = data.sensorsTable;
+          //let macsList = data.macsTable;
+          let alertsList = data.alertsTable;
+          let systemList = data.systemTable;
+
+          var today = new Date(params.period_to);
+
+          let _door_alert = false;
+          let _fire_alert = false;
+          var door_alert = [];
+          var fire_alert = [];
+          let { stationsList } = this.state;
+          today -= 1200000;
+
+
+          //20 min averaging 
+
+
+
+          //packing alerts
+          //console.log('Date = ', alertsList);
+
+          var _time_frame = [];
+          var _date = new Date(params.period_to).format('Y-MM-dd');
+          var _array = [];
+          var _indx = [];
+          var _compressed = [];
+
+          for (var h = 23; h > -1; h--) {
+            for (var m = 59; m > -1; m -= 20) {
+
+
+              _time_frame.push(_date + ' ' + h.toString() + ':' + m.toString() + ':00');
+
+            };
+          };
+          _time_frame.push(_date + ' 00:00:00');
+
+
+
+          for (var _j = 1; _j < _time_frame.length; _j++) {
+            let _pack = alertsList.filter((_alerts, _i) => {
+
+
+              return ((new Date(_alerts.date_time) < new Date(_time_frame[_j - 1])) && (new Date(_alerts.date_time) > new Date(_time_frame[_j])))
+
+            })
+
+
+            if (_pack.length > 0)
+              var _flag = 0;
+            while (_flag < _pack.length) {
+              _indx = [];
+              _pack.map((_test, _i) => {
+                if ((_test.type == _pack[_flag].type) && (_test.id == _pack[_flag].id))
+                  _indx.push(_i);
+              })
+              _array = [];
+
+              if (_indx.length > 1) {
+                _array = [..._pack.slice(0, _indx[0] + 1)];
+                for (var _cnt = _indx[0] + 1; _cnt < _pack.length; _cnt++) {
+                  if (_indx.indexOf(_cnt) == -1)
+                    _array.push(_pack[_cnt]);
+
+                }
+                _pack = [];
+                Object.assign(_pack, _array);
+              }
+              _flag++;
+            }
+            // _array.push([..._pack]);
+
+            if (_pack.length > 0)
+              _compressed = [..._compressed, ..._pack];
+          };
+          //console.log("Time exit = ", Date.parse(new Date()));
+
+
+          this.setState({
+            alertsHistoryList: _compressed, systemHistoryList: systemList
+          });
+
+        };
+      });
+
+
+    };
+  }
+
   componentWillMount() {
     this.renderData();
+    this.renderHistoricalData(this.state.dateTimeAlerts);
     this.interval = setInterval(this.renderData.bind(this), 30000);
   }
   componentWillUnmount() {
@@ -335,7 +453,8 @@ class DashBoard extends Component {
     const { username, is_admin } = this.props;
 
     const { classes } = this.props;
-    const { stationsList, macsList, dataList, sensorsList, open, anchorEl, mobileOpen, alertsList, door_alert, fire_alert, systemList } = this.state;
+    const { stationsList, macsList, dataList, sensorsList, open, anchorEl, mobileOpen, alertsList, door_alert,
+      fire_alert, systemList, alertsHistoryList, systemHistoryList } = this.state;
     var tabs = [];
     var filter = '';
     var _filter = '';
@@ -598,19 +717,7 @@ class DashBoard extends Component {
               <h6>Тревоги </h6>
 
               <Divider />
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <TextField
-                  id="dateTimeAlerts"
-                  label="за "
-                  type="date"
-                  defaultValue={this.state.dateTimeAlerts}
-                  className={classes.textField}
-                  // selectProps={this.state.dateTimeBegin}
-                  onChange={(event) => { this.handlePickerChange(event) }}
-                  InputLabelProps={{
-                    shrink: true,
-                  }} />
-              </div>
+
 
               <br />
               {(!isEmpty(alertsList)) &&
@@ -635,6 +742,82 @@ class DashBoard extends Component {
               <br />
               {(!isEmpty(systemList)) &&
                 systemList.map((element, ind) => (
+
+                  <div style={{ display: element.is_visible ? 'block' : 'none' }} key={'sys_' + ind}>
+                    <SnackbarContent
+
+                      color={element.type == 200 ? 'info' : 'warning'}
+                      message1={element.date_time}
+                      message2={element.descr}
+                      action={[
+                        <IconButton
+                          key={ind}
+                          aria-label="Close"
+                          color="inherit"
+                          className={classes.close}
+                          onClick={this.onClose(ind)}
+                        >
+                          <CloseIcon className={classes.icon} />
+                        </IconButton>,
+                      ]}
+                      close
+                    />
+                  </div>))}
+            </GridItem>
+
+          </GridContainer>
+
+
+        )
+      })
+
+      tabs.push({
+        tabName: 'История',
+        tabIcon: HistoryToggleOffTwoToneIcon,
+        tabContent: (
+
+          <GridContainer >
+            <GridItem xs={12} sm={5} md={5}>
+              <h6>Тревоги </h6>
+
+              <Divider />
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <TextField
+                  id="dateTimeAlerts"
+                  label="за "
+                  type="date"
+                  defaultValue={this.state.dateTimeAlerts}
+                  className={classes.textField}
+                  // selectProps={this.state.dateTimeBegin}
+                  onChange={(event) => { this.handlePickerChange(event) }}
+                  InputLabelProps={{
+                    shrink: true,
+                  }} />
+              </div>
+
+              <br />
+              {(!isEmpty(alertsHistoryList)) &&
+                alertsHistoryList.map((element, ind) => (
+                  <SnackbarContent
+                    color='danger'
+                    key={'alert_' + ind}
+                    message1={element.date_time}
+                    message2={element.descr}
+                    className={classes.message}
+
+                  />))
+
+              }
+
+            </GridItem>
+
+            <GridItem xs={12} sm={5} md={7}>
+              <h6>Системные события</h6>
+              <Divider />
+
+              <br />
+              {(!isEmpty(systemHistoryList)) &&
+                systemHistoryList.map((element, ind) => (
 
                   <div style={{ display: element.is_visible ? 'block' : 'none' }} key={'sys_' + ind}>
                     <SnackbarContent
@@ -821,19 +1004,21 @@ class DashBoard extends Component {
 
         )
       })
+
+      //document.getElementById('id0').addEventListener('click', this.handleTabsChange);
+
     }
     return (
 
-      <div onClick={this.handleTabsChange.bind(this)}>
+      <div>
 
 
         <Tabs
+          id='id0'
           title="Станции наблюдения:"
           headerColor="info"
-          
           tabs={tabs} />
       </div >
-
     );
   }
 }
@@ -854,5 +1039,5 @@ DashBoard.propTypes = {
 
 
 
-export default connect(mapStateToProps, { addLogsList, deleteLogsList, queryDashBoardDataOperativeEvent, queryAllDataOperativeEvent, queryEvent, queryMeteoEvent })(withStyles(styles)(DashBoard));
+export default connect(mapStateToProps, { addLogsList, deleteLogsList, queryDashBoardDataOperativeEvent, queryDashBoardAlertsHistory, queryAllDataOperativeEvent, queryEvent, queryMeteoEvent })(withStyles(styles)(DashBoard));
 
