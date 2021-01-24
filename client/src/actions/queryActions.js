@@ -283,8 +283,8 @@ export function queryManyEvent(paramstr) {
                             unit_name: element.unit_name,
                             measure_class: element.measure_class,
                             is_wind_sensor: element.is_wind_sensor,
-                            max_consentration: element.max_consentration,
-                            max_day_consentration: element.max_day_consentration,
+                            max_consentration: '', //(!isNaN(element.max_consentration) || (element.max_consentration == 0)) ? ((element.max_consentration > 900) ? '' : Number(element.max_consentration)) : '' ,
+                            max_day_consentration: '', //(!isNaN(element.max_day_consentration)|| (element.max_day_consentration == 0) )? ((element.max_day_consentration > 900) ? '' : Number(element.max_day_consentration)) : '' ,
                             def_colour: element.def_colour
 
                         });
