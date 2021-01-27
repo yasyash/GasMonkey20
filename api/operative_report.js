@@ -334,7 +334,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
     let station_name = data.station_name;
 
     const between_date = [data.period_from, data.period_to];
-         //console.log('data ', between_date);
+    //console.log('data ', between_date);
 
     //console.log('time in =', Date.now());
     //var start1 = Date.now();
@@ -471,7 +471,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                             for (var elem = 0; elem < _meteo.length; elem++) {
                                 day_now = date.format(new Date(_meteo[elem].date_time), 'DD-MM-YYYY');
 
-                                if ((day_now == item) )
+                                if ((day_now == item))
                                     meteo.push(_meteo[elem]);
                             }
 
@@ -686,9 +686,9 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                         'counter_macs1': counter_macs1,
                         'counter_macs5': counter_macs5,
                         'counter_macs10': counter_macs10,
-                        's_index': Number(max / element.max_m).toFixed(1),
-                        'gre_repeatably': Number(sum_alert / counter * 100).toFixed(2),
-                        'pollut_ind': Number(quotient / element.max_d * coefficient).toFixed(1),
+                        's_index': Number(element.max_d) < 900 ? Number(max / element.max_d).toFixed(1) : '-',
+                        'gre_repeatably': Number( element.max_d)<900 ? Number(sum_alert / counter * 100).toFixed(2) : '-',
+                        'pollut_ind': Number( element.max_d)<900 ? Number(quotient / element.max_d * coefficient).toFixed(1) : '-',
                         'className': class_css
                     })
                 };

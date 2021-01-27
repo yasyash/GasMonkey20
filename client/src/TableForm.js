@@ -191,7 +191,7 @@ class TableForm extends React.Component {
             // it does not exist so add it
             selection.push(row._id);
             station_actual.push(row.id);
-            station_names.push({[row.id]:row.namestation});
+            station_names.push({ [row.id]: row.namestation });
         }
         // update the state            
         this.setState({ station_actual });
@@ -202,7 +202,7 @@ class TableForm extends React.Component {
 
     };
 
-    toggleAll() {
+    handleToggleAll() {
 
         /*
           'toggleAll' is a tricky concept with any filterable table
@@ -294,7 +294,7 @@ class TableForm extends React.Component {
     handleClick() {
 
         //e.preventDefault();
-
+        //tableform
         this.loadData(1).then(data => {
             if (data) {
                 this.loadData(3);
@@ -311,9 +311,6 @@ class TableForm extends React.Component {
             }
         });
 
-        //alert('loadData');
-
-        //   this.props.createMyEvent(this.state);
     };
 
     async    loadData(qtype) {
@@ -382,7 +379,7 @@ class TableForm extends React.Component {
 
     };
     render() {
-        const { toggleSelection, toggleAll, isSelected } = this;
+        const { toggleSelection, handleToggleAll, isSelected } = this;
         const { selection, selectAll, stationsList, height, defaultPageSize, stripedRows } = this.state;
         const { loadData, classes, auth } = this.props;
         // var tableData = this.state.stationsList;
@@ -404,7 +401,7 @@ class TableForm extends React.Component {
             selectAll,
             isSelected: isSelected.bind(this),
             toggleSelection: toggleSelection.bind(this),
-            toggleAll: toggleAll.bind(this),
+            toggleAll: handleToggleAll.bind(this),
             selectType: "checkbox",
             getTrProps: (s, r) => {
                 let selected = false;

@@ -147,7 +147,8 @@ class MenuTable extends Component {
             isEdit,
             isForceToggle,
             isData,
-            isTableStation
+            isTableStation, 
+            selectAll
         } = props;
 
         if (isStation) { isNll = true }
@@ -175,7 +176,8 @@ class MenuTable extends Component {
             hideFiltartion,
             averaging: 1,
             isData,
-            isTableStation
+            isTableStation,
+            selectAll
 
         };
 
@@ -189,59 +191,56 @@ class MenuTable extends Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleEdit = this.handleEdit.bind(this);
         this.handleUpdateSQLClick = this.handleUpdateSQLClick.bind(this);
-
+       // this.handleToggleAll = this.handleToggleAll.bind(this);
     }
 
     handleExcelSave = (name) => {
-    
-        const {dateReportEnd} = this.props;
-        var date ='';
-        var chemical = this.state.chemical;
-        
-        
-         var   date =new Date().format('dd-MM-Y_H:mm');
-        var pollution = this.props.dataList;
-        var values = [], data =[];
 
-        values.push({pollution : pollution});
-        data.push({station: this.props.stationName},{values: values});
-        
-         
-         if (!isEmpty(this.props.dataList)) {
-    
-                var filename = 'Table_' + this.props.stationName + '_Export' + '_' + date + '.csv';
-              
+        const { dateReportEnd } = this.props;
+        var date = '';
+        var chemical = this.state.chemical;
+
+
+        var date = new Date().format('dd-MM-Y_H:mm');
+        var pollution = this.props.dataList;
+        var values = [], data = [];
+
+        values.push({ pollution: pollution });
+        data.push({ station: this.props.stationName }, { values: values });
+
+
+        if (!isEmpty(this.props.dataList)) {
+
+            var filename = 'Table_' + this.props.stationName + '_Export' + '_' + date + '.csv';
+
             var str_hdr = ';;;Данные наблюдения ПНЗ ;;\r\nВремя;Тип;Значение;Единицы;Тревога;id';
             var str_body = "";
             var keys = [];
 
             data[1].values[0].pollution.forEach(item => {
-                if (item.date_time.indexOf ('Время') == -1){
-                    if (keys.length ==0){
+                if (item.date_time.indexOf('Время') == -1) {
+                    if (keys.length == 0) {
                         str_body += item.date_time + ";" + item.typemeasure + ";" + item.measure + ";" + item.unit_name + ";" +
-                       item.is_alert + ";" + item.serialnum + ";" + "\r\n";
+                            item.is_alert + ";" + item.serialnum + ";" + "\r\n";
                     }
-                    else
-                    {
+                    else {
                         str_body += item.date_time;
                         keys.forEach(_item_key => {
-                            str_body += ";"+item[_item_key];
+                            str_body += ";" + item[_item_key];
                         })
                         str_body += "\r\n";
                     }
 
                 }
-                    else
-                    {
-                        
-                        str_hdr = ';;Данные наблюдения ПНЗ ;\r\n'+item.date_time;
-                        for (var __key in item)  {
-                            if ((__key !='date_time') &&(__key !='_id'))
-                                {
-                                    keys.push(__key);
-                                    str_hdr +=";"+item[__key];
-                                }
+                else {
+
+                    str_hdr = ';;Данные наблюдения ПНЗ ;\r\n' + item.date_time;
+                    for (var __key in item) {
+                        if ((__key != 'date_time') && (__key != '_id')) {
+                            keys.push(__key);
+                            str_hdr += ";" + item[__key];
                         }
+                    }
 
 
                 }
@@ -249,16 +248,16 @@ class MenuTable extends Component {
 
 
             var file = [str_hdr + '\r\n' + str_body];
-                 
+
             var blob = new Blob([file], { type: "text/plain;charset=utf-8" });
-        
+
             saveAs(blob, filename);
-        
-            
-         }
-        
-        };
-        
+
+
+        }
+
+    };
+
 
     handleUpdateSQLClick() {
         this.props.handleUpdateData();
@@ -293,6 +292,21 @@ class MenuTable extends Component {
             nameFilter: stateValue
         })
     }
+    handleToggleAll() {
+        
+
+        if ((event.target.name === 'selectable') ||
+            (event.target.name === 'multiSelectable') ||
+            (event.target.name === 'enableSelectAll')) {
+
+            if (!this.state.showCheckboxes) {
+                event.target.name = 'showCheckboxes'
+                this.props.handleToggleAll();
+                
+            }
+        }
+    };
+
     handleToggle(event, toggled) {
         this.setState({
             [event.target.name]: toggled
@@ -369,7 +383,7 @@ class MenuTable extends Component {
 
             <nav className="navbar form-control classes.container">
                 <div className="navbar-header"   >
-                 {(this.state.isSensor || this.state.isTableStation)  && <IconButton
+                    {(this.state.isSensor || this.state.isTableStation) && <IconButton
                         className={classes.button}
                         tooltip={'Обновить'}
                         onClick={this.handleRefresh('all')} //fake parameter for return function call
@@ -378,19 +392,19 @@ class MenuTable extends Component {
                             <RenewIcon />
                         </Icon>
                     </IconButton>
-                 }
+                    }
 
-            {(this.state.isData) && <Tooltip id="tooltip-charts-view4" title="Экспорт в Excel">
+                    {(this.state.isData) && <Tooltip id="tooltip-charts-view4" title="Экспорт в Excel">
 
-                    <IconButton className={classes.button} onClick = {this.handleExcelSave} aria-label="Экспорт в Excel">
-                        <SvgIcon className={classes.icon}>
-                            <path d="M6,2H14L20,8V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M13,3.5V9H18.5L13,
+                        <IconButton className={classes.button} onClick={this.handleExcelSave} aria-label="Экспорт в Excel">
+                            <SvgIcon className={classes.icon}>
+                                <path d="M6,2H14L20,8V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M13,3.5V9H18.5L13,
                             3.5M17,11H13V13H14L12,14.67L10,13H11V11H7V13H8L11,15.5L8,18H7V20H11V18H10L12,16.33L14,
                             18H13V20H17V18H16L13,15.5L16,13H17V11Z" />
-                        </SvgIcon>
-                    </IconButton>
+                            </SvgIcon>
+                        </IconButton>
 
-                </Tooltip>}
+                    </Tooltip>}
                     {(this.state.isEdit) && (!this.props.isForceToggle) &&
                         <IconButton className={classes.button} tooltip={'Записать'} aria-label="Записать">
                             <Icon className={classes.icon} color="primary" onClick={this.handleUpdateSQLClick}>
@@ -439,13 +453,13 @@ class MenuTable extends Component {
 
 
                     {(this.state.isSensor) &&
-                        <Slider min={1} max={60} defaultValue={1} marks={{ 1: '1', 5: '5', 10: '10', 20: '20', 60: '60' }} step={null} 
-                        onChange={(value1) => this.handleChange(name = 'averaging',  { target: {value: value1}})}
+                        <Slider min={1} max={60} defaultValue={1} marks={{ 1: '1', 5: '5', 10: '10', 20: '20', 60: '60' }} step={null}
+                            onChange={(value1) => this.handleChange(name = 'averaging', { target: { value: value1 } })}
 
                         />
                     }
 
-                    
+
                 </div>
 
                 <div className="navbar-right">
