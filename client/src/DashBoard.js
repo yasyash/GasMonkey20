@@ -61,7 +61,7 @@ import { addLogsList, deleteLogsList } from './actions/logsAddActions';
 //import { filter } from 'ramda';
 //import auth from './reducers/auth';
 import TextField from '@material-ui/core/TextField';
-
+import QueryBuilderIcon from '@material-ui/icons/QueryBuilder';
 
 const styles = theme => ({
   root: {
@@ -442,7 +442,7 @@ class DashBoard extends Component {
   componentWillMount() {
     this.renderData();
     this.renderHistoricalData(this.state.dateTimeAlerts);
-    this.interval = setInterval(this.renderData.bind(this), 30000);
+    this.interval = setInterval(this.renderData.bind(this), 20000);
   }
   componentWillUnmount() {
     clearInterval(this.interval);
@@ -518,7 +518,7 @@ class DashBoard extends Component {
                         <CardFooter stats>
                           <div className={classes.stats}>
                             <Place />
-                            {item.place} </div>
+                            {item.place} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <QueryBuilderIcon/>&nbsp;&nbsp; {filter[0].date_time}</div>
                         </CardFooter>
                       </Card>
 
@@ -885,7 +885,7 @@ class DashBoard extends Component {
                         <CardFooter stats>
                           <div className={classes.stats}>
                             <Place />
-                            {item.place} </div>
+                            {item.place}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<QueryBuilderIcon/>&nbsp;&nbsp; {filter[0].date_time}</div>
                         </CardFooter>
                       </Card>
 

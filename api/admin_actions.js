@@ -21,7 +21,7 @@ import DEV from '../models/devices';
 import Stations from '../models/stations'
 import Macs from '../models/macs';
 import DATA from '../models/data';
-import { isString } from 'util';
+import { isString, isNumber } from 'util';
 
 let router = express.Router();
 
@@ -788,30 +788,48 @@ router.post('/dev_update', authenticate, (req, resp) => {
     //   console.log(req.body);
     var _ldc = Number(data.max_day_consentration);
     var _lmc = Number(data.max_consentration);
-    //console.log("PDK  ", _ldc, _lmc);
+    var _min_r = Number(data.min_range);
+    var _max_r = Number(data.max_range);
+
+    console.log("min in, max in ", data.min_range, data.max_range);
+
+    console.log("min, max  ", _min_r, _max_r);
 
     if (isNaN(_ldc) || (_ldc == 0))
         _ldc = 1000;
     if (isNaN(_lmc) || (_lmc == 0))
         _lmc = 1000;
-    //console.log("PDK  ", _ldc, _lmc);
+    if (isEmpty(toString(data.min_range))||isNaN(data.min_range))
+        _min_r = null;
+    if (isEmpty(toString(data.min_range))||isNaN(data.max_range))
+        _max_r = null;
 
+    console.log("min  ",(isNumber(data.min_range)), _min_r);
+    console.log("max  ", (isNumber(data.max_range)), _max_r);
+    console.log(
+        data.typemeasure,
+        data.serialnum,
+        data.idd,
+        data.unit_name,
+        data.def_colour)
+
+       
     DEV.where({ id: data.id })
         .save({
-            updateperiod: data.updateperiod,
+            //updateperiod: data.updateperiod,
             typemeasure: data.typemeasure,
             // date_time_out: new Date().format('dd-MM-Y HH:mm:SS'),
             serialnum: data.serialnum,
             idd: data.idd,
             unit_name: data.unit_name,
             def_colour: data.def_colour,
-            max_consentration: _lmc,
-            max_day_consentration: _ldc
+            max_consentration: _min_r,
+            max_day_consentration: _max_r
             //  is_active: data.is_active,
             // is_admin: data.is_admin,
         }, { patch: true }).then(Macs.where({ chemical: data.typemeasure })
             .save({ max_d: _ldc, max_m: _lmc }, { patch: true }))
-        .catch(err => resp.status(500).json({ error: err }))
+        .catch(err =>{ console.log('err ', err)})
         .then(result => {
             resp.json({ result });
         }).catch(err => resp.status(500).json({ error: err }));
