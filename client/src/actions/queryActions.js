@@ -96,6 +96,7 @@ export function queryEvent(paramstr) {
                         var first_hour = new Date(first_date).format('Y-MM-dd HH:mm:SS');
                         var first_minute = new Date(first_date).format('Y-MM-dd HH:mm:SS');
                         var work_date = moment(first_date);
+                        var max_range = Number(sensors_list[0].max_day_consentration);
 
                         var _i = 0;
                         var _j = 0;
@@ -137,7 +138,7 @@ export function queryEvent(paramstr) {
                                 unit_name: unit_name,
                                 measure: element.measure.toFixed(3),
                                 is_alert: element.is_alert ? 'тревога' : 'нет',
-                                is_range: element.is_range ? 'вне диапазона' : 'в диапазоне',
+                                is_range: (Number(element.measure) > max_range) ? 'вне диапазона' : 'в диапазоне',
 
                             });
 
@@ -314,6 +315,7 @@ export function queryManyEvent(paramstr) {
                             var first_hour = new Date(first_date).format('Y-MM-dd HH:mm:SS');
                             var first_minute = new Date(first_date).format('Y-MM-dd HH:mm:SS');
                             var work_date = moment(first_date);
+                            var max_range = sensors_list[0].max_day_consentration;
 
                             var _i = 0;
                             var _j = 0;
@@ -355,7 +357,7 @@ export function queryManyEvent(paramstr) {
                                     unit_name: unit_name,
                                     measure: element.measure.toFixed(3),
                                     is_alert: element.is_alert ? 'тревога' : 'нет',
-                                    is_range: element.is_range ? 'вне диапазона' : 'в диапазоне',
+                                    is_range: (Number(element.measure) > max_range) ? 'вне диапазона' : 'в диапазоне'
                                 });
 
                             });
@@ -577,6 +579,8 @@ export function queryOperativeEvent(paramstr) {
                             serialnum: element.serialnum,
                             unit_name: element.unit_name,
                             is_wind_sensor: element.is_wind_sensor,
+                            min_range: element.max_consentration,
+                            max_range: element.max_day_consentration
                         });
                     });
 
@@ -1281,14 +1285,14 @@ export function queryDashBoardDataOperativeEvent(paramstr) {
                             unit_name: element.unit_name,
                             measure: element.measure,
                             is_alert: element.is_alert,
-                            momental_measure : element.momental_measure,
+                            momental_measure: element.momental_measure,
                             increase: element.increase
                         });
                     });
 
                     sensors_list.forEach(element => {
                         sensorsTable.push({
-                            id:  element.idd,
+                            id: element.idd,
                             typemeasure: element.typemeasure,
                             serialnum: element.serialnum,
                             unit_name: element.unit_name,
@@ -1392,7 +1396,7 @@ export function queryDashBoardAlertsHistory(paramstr) {
             .then(resp => resp.data)
             .then(data => {
                 if (data.response) {
-                    
+
                     let _logs_list = data.response[0];
                     let unit_name = '';
                     let prev = '';
@@ -1401,7 +1405,7 @@ export function queryDashBoardAlertsHistory(paramstr) {
                         alertsTable = [],
                         systemTable = [],
                         last = '';
-                   
+
                     var iterator = [0, 100, 101, 102, 110, 111, 112, 113, 114, 115, 120, 200, 404, 500]; //all type error
 
                     iterator.forEach((i, _ind) => {

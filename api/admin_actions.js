@@ -791,9 +791,9 @@ router.post('/dev_update', authenticate, (req, resp) => {
     var _min_r = Number(data.min_range);
     var _max_r = Number(data.max_range);
 
-    console.log("min in, max in ", data.min_range, data.max_range);
+    //console.log("min in, max in ", data.min_range, data.max_range);
 
-    console.log("min, max  ", _min_r, _max_r);
+    //console.log("min, max  ", _min_r, _max_r);
 
     if (isNaN(_ldc) || (_ldc == 0))
         _ldc = 1000;
@@ -804,14 +804,14 @@ router.post('/dev_update', authenticate, (req, resp) => {
     if (isEmpty(toString(data.min_range))||isNaN(data.max_range))
         _max_r = null;
 
-    console.log("min  ",(isNumber(data.min_range)), _min_r);
-    console.log("max  ", (isNumber(data.max_range)), _max_r);
-    console.log(
-        data.typemeasure,
-        data.serialnum,
-        data.idd,
-        data.unit_name,
-        data.def_colour)
+    //console.log("min  ",(isNumber(data.min_range)), _min_r);
+    //console.log("max  ", (isNumber(data.max_range)), _max_r);
+    //console.log(
+     //   data.typemeasure,
+     //   data.serialnum,
+     //   data.idd,
+     //   data.unit_name,
+     //   data.def_colour)
 
        
     DEV.where({ id: data.id })

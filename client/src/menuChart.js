@@ -48,6 +48,7 @@ import { connect } from 'react-redux';
 
 
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
+import Filter from '@material-ui/icons/FilterRounded';
 
 const ITEM_HEIGHT = 48;
 
@@ -231,6 +232,16 @@ class MenuChart extends Component {
         };
     };
 
+    
+    handleRangeChange = name => event => {
+        
+        //this.setState({ [name]: event.target.value });
+
+        this.props.handleRangeChange(name, event);
+     
+
+    };
+
     handlePdfClick = (name) => {
 
         const doc = new jsPDF({
@@ -404,9 +415,23 @@ class MenuChart extends Component {
                                     </IconButton>
                                 </Tooltip>
                             </div>
-                        </div>
-                        <div className={classes.root}>
 
+
+                            
+
+                        <div className={classes.root}>
+                        <div>
+                                <Tooltip id="tooltip-charts-rangePrcnt" title="контроль диапазона">
+                                    <span className={classes.icon}>контроль диапазона</span>
+                                </Tooltip>
+                                <Checkbox
+                                    checked={this.props.is_range}
+                                    onChange={this.handleRangeChange('is_range')}
+                                    value="is_range"
+                                />
+     
+                            </div>
+                        </div>
                             {(checkedMeteo) &&
                                 <Tooltip id="tooltip-charts-rangePrcnt" title="Отображение в долях ПДК">
                                     <span className={classes.icon}> отображение в долях</span>
@@ -519,7 +544,7 @@ class MenuChart extends Component {
                             </Tooltip>
 
 
-                            
+
                         </div>
 
 

@@ -61,7 +61,7 @@ import { addLogsList, deleteLogsList } from './actions/logsAddActions';
 //import { filter } from 'ramda';
 //import auth from './reducers/auth';
 import TextField from '@material-ui/core/TextField';
-import QueryBuilderIcon from '@material-ui/icons/QueryBuilder';
+import QueryBuilderIcon from '@material-ui/icons/QueryBuilderTwoTone';
 
 const styles = theme => ({
   root: {
