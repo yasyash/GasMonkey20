@@ -46,7 +46,7 @@ import { queryEvent, queryOperativeEvent } from './actions/queryActions';
 import pinAlert from './pin-alert.png';
 
 
-//const pngs = require.context('../../tiles', true, /\.png$/);
+const pngs = require.context('../../tiles', true, /\.png$/);
 
 
 //const pinAlert = require.context('./', true, /\.svg$/);
