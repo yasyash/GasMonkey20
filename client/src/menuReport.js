@@ -153,8 +153,13 @@ const styles = theme => ({
     },
     input: {
         display: 'none',
+    },
+    alert_range: {
+        backgroundColor: '#ffa500'
+    },
+    alert_empty: {
+        backgroundColor: '#a5a5cc'
     }
-
 });
 
 function fnExcelReport() {
@@ -361,7 +366,7 @@ class MenuReport extends Component {
             var dom = document.createElement('monthly_report');
         };
 
-        if (this.props.report_type == 'tza4') {
+        if ((this.props.report_type == 'tza4') ||(this.props.report_type == 'tza4_auto')){
             var _html = document.getElementById('tza4_report');
             var dom = document.createElement('tza4_report');
         };
@@ -783,19 +788,27 @@ class MenuReport extends Component {
 
         }
 
-        if (this.props.report_type == 'tza4') {
+        if ((this.props.report_type == 'tza4')|| (this.props.report_type == 'tza4_auto')) {
             var dateReportBegin = new Date(new Date(value).getFullYear(), new Date(value).getMonth(), '1', '0', '0').format('Y-MM-ddTHH:mm');
             var dateReportEnd = new Date(new Date(value).getFullYear(), new Date(value).getMonth(), this.daysInMonth(new Date(value).getMonth()), '23', '59', '59').format('Y-MM-ddTHH:mm:SS');
             dateAddReportAction({ 'dateReportBegin': dateReportBegin });
             dateAddReportAction({ 'dateReportEnd': dateReportEnd });
 
-            if (!isEmpty(this.props.station_name) && !isEmpty(this.state.chemical)) {
+            if (!isEmpty(this.props.station_name) && !isEmpty(this.state.chemical) && (this.props.report_type == 'tza4')) {
                 this.props.handleReportChange({
                     station_name: this.props.station_name, station_actual: this.props.station_actual,
                     'dateReportBegin': dateReportBegin, 'dateReportEnd': dateReportEnd, chemical: this.state.chemical
                 });
 
+            } 
+            if (!isEmpty(this.props.station_name)  && (this.props.report_type == 'tza4_auto'))  {
+                this.props.handleReportChange({
+                    station_name: this.props.station_name, station_actual: this.props.station_actual,
+                    'dateReportBegin': dateReportBegin, 'dateReportEnd': dateReportEnd, chemical: this.state.chemical
+                });
             }
+
+            
 
         }
 
@@ -899,7 +912,7 @@ class MenuReport extends Component {
 
                         />}
 
-                        {(this.state.report_type == 'tza4') && <TextField
+                        {((this.state.report_type == 'tza4')||((this.state.report_type == 'tza4_auto'))) && <TextField
                             id="dateReportBegin"
                             label="дата отчета"
                             type="month"

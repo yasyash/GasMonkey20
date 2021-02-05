@@ -41,6 +41,9 @@ import OperativeReport from './OperativeReport';
 import DailyReport from './DailyReport';
 import MonthlyReport from './MonthlyReport';
 import Tza4Report from './Tza4Report';
+import Tza4ReportAnalyzers from './Tza4ReportAnalyzers';
+
+
 import ChartFormReport from './ChartFormReport';
 const styles = theme => ({
     root: {
@@ -298,7 +301,14 @@ class ReportForm extends React.Component {
                             dateTimeEnd={new Date().format('Y-MM-ddT') + '23:59:59'}
                         />
                     </Tab>
+                    <Tab label="ТЗА-4 автоматические" >
+                    <Tza4ReportAnalyzers {...this.state}
+                            dateTimeBegin={new Date(new Date().getFullYear(), new Date().getMonth(), 1, '0', '0').format('Y-MM-ddTHH:mm')}
+                            dateTimeEnd={new Date().format('Y-MM-ddT') + '23:59:59'}
+                        />
+                    </Tab>
 
+                    
                     <Tab label="Графический" >
                     <ChartFormReport  {...this.state} />
 

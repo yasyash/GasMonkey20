@@ -55,6 +55,9 @@ const styles = theme => ({
     alert_range: {
         backgroundColor: '#ffa500'
     },
+    alert_empty: {
+        backgroundColor: '#a5a5cc'
+    }
 
 
 
