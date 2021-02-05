@@ -29,12 +29,16 @@ let router = express.Router();
 
 
 
-router.get('/', authenticate, (req, resp) => {
+router.post('/', authenticate, (req, resp) => {
     //  
+    //console.log("request ", req);
+    let data = req.body;
+    //console.log("request ", data);
 
-    let query = url.parse(req.url).query;
-    let obj = qs.parse(query);
-    let data = JSON.parse(obj.data);
+    //let query = url.parse(req.url).query;
+    //let obj = qs.parse(query);
+
+    //let data = JSON.parse(obj.data);
     //  if (query) {
     //    obj = JSON.parse(decodeURIComponent(query))
     //}
@@ -42,7 +46,7 @@ router.get('/', authenticate, (req, resp) => {
     // const between_date = ['2018-05-21 00:00:00', '2018-05-21 19:05:00']
     // console.log('sensors ', data.sensors[0]);
     //if (data.report == 'operative') {
-    //console.log(data.html);
+   
     if (data.report == 'operative') {
         var filename = 'OperativeReport_station_' + data.station + '_' + data.date + '.docx';
         var filereport = 'operative_templ.docx'
@@ -68,9 +72,15 @@ router.get('/', authenticate, (req, resp) => {
             filereport = 'tza4_wm_templ.docx'
         }
     };
+    if (data.report == 'tza4_auto') {
+        var filename = 'TZA_4_2015_Report_station_' + data.station + '_' + data.date + '.docx';
+
+        var filereport = 'tza4_auto_templ.docx'
+
+    };
+
+
     var filepath = './reports/';
-
-
 
 
     resp.setHeader('Content-type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
@@ -78,12 +88,13 @@ router.get('/', authenticate, (req, resp) => {
 
     carbone.render(path.resolve(filepath + filereport), data.data_4_report, function (err, result) {
         if (err) {
-            return console.log(err);
+            resp.send(err);
+        } else {
+            // write the result
+            //fs.writeFileSync(path.resolve(filepath + 'result.docx'), result);
+            // write the result
+            resp.send(result);
         }
-        // write the result
-
-        // write the result
-        resp.send(result);
 
     });
 
@@ -128,12 +139,13 @@ router.get('/', authenticate, (req, resp) => {
 
 });
 
-router.get('/report_excel', authenticate, (req, resp) => {
+router.post('/report_excel', authenticate, (req, resp) => {
     //  
 
-    let query = url.parse(req.url).query;
-    let obj = qs.parse(query);
-    let data = JSON.parse(obj.data);
+    //let query = url.parse(req.url).query;
+    //let obj = qs.parse(query);
+    //let data = JSON.parse(obj.data);
+    let data = req.body;
     let checked_meteo = data.checked_meteo;
     //  if (query) {
     //    obj = JSON.parse(decodeURIComponent(query))
@@ -169,6 +181,15 @@ router.get('/report_excel', authenticate, (req, resp) => {
         }
     };
 
+    if (data.report == 'tza4_auto') {
+        var filename = 'TZA_4_2015_Report_station_' + data.station + '_' + data.date + '.xlsx';
+
+        var filereport = 'tza4_auto_templ.xlsx'
+        //console.log("WITH METEO")
+
+
+    };
+
     if (data.report == 'table') {
         var filename = 'Table_' + data.station + '_' + data.chemical + '_' + data.date + '.xlsx';
         var filereport = 'table_templ.xlsx'
@@ -183,12 +204,13 @@ router.get('/report_excel', authenticate, (req, resp) => {
 
     carbone.render(path.resolve(filepath + filereport), data.data_4_report, function (err, result) {
         if (err) {
-            return console.log(err);
+            resp.send(err);
+        } else {
+            // write the result
+            //fs.writeFileSync(path.resolve(filepath + 'result.docx'), result);
+            // write the result
+            resp.send(result);
         }
-        // write the result
-
-        // write the result
-        resp.send(result);
 
     });
 
@@ -1503,6 +1525,9 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
     let obj = qs.parse(query);
     let data = JSON.parse(obj.data);
     let station_name = data.station_name;
+    let place = data.place;
+    let lat = data.lat;
+    let lon = data.lon;
     let chemic = data.chemic;
     let meteo_add = data.checked_meteo;
     const between_date = [data.period_from, data.period_to];
@@ -1625,7 +1650,7 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
                         (meteo_all[elem].typemeasure == 'Влажность внеш.') || (meteo_all[elem].typemeasure == 'Темп. внешняя'))) {
                         meteo.push(meteo_all[elem]);
                     }
-                   
+
 
                 }
 
@@ -1868,6 +1893,34 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
             var pollution = [];
             var values = [];
             var data = [];
+            tza4_templ.forEach((time, i) => {
+                time[i + 1].map((element, j) => {
+                    pollution.push({
+                        day: i + 1,
+                        time: element.time, tempr: String(element.tempr).replace('.', ','), dir: String(element.dir).replace('.', ','), spd: String(element.spd).replace('.', ','), hum: String(element.hum).replace('.', ','),
+                        valueNO: String(element[0].NO).replace('.', ','), valueNO2: String(element[1].NO2).replace('.', ','), valueNH3: String(element[2].NH3).replace('.', ','), valueSO2: String(element[3].SO2).replace('.', ','),
+                        valueH2S: String(element[4].H2S).replace('.', ','), valueO3: String(element[5].O3).replace('.', ','), valueCO: String(element[6].CO).replace('.', ','), valueCH2O: String(element[7].CH2O).replace('.', ','), valuePM1: String(element[8].PM1).replace('.', ','),
+                        valuePM25: String(element[9]['PM2.5']).replace('.', ','), valuePM10: String(element[10].PM10).replace('.', ','), valueTSP: String(element[11]['Пыль общая']).replace('.', ','),
+                        valueC6H6: String(element[12]['бензол']).replace('.', ','), valueC7H8: String(element[13]['толуол']).replace('.', ','), valueC8H10: String(element[14]['этилбензол']).replace('.', ','),
+                        valueC8H10MP: String(element[15]['м,п-ксилол']).replace('.', ','), valueC8H10O: String(element[16]['о-ксилол']).replace('.', ','), valueC6H5Cl: String(element[17]['хлорбензол']).replace('.', ','),
+                        valueC8H8: String(element[18]['стирол']).replace('.', ','), valueC6H5OH: String(element[19]['фенол']).replace('.', ',')
+                    });
+                });
+            })
+            values.push({
+                place: place,
+                lat: lat,
+                lon: lon,
+                year: date.format(new Date(period_from), 'YYYY'),
+                month: date.format(new Date(period_from), 'MM'), pollution: pollution
+
+            });
+
+            //  console.log('values ' + values);
+
+
+            data.push({ station: station_name, values: values });
+
             /*if (!meteo_add) {
                 tza4_templ.forEach((element, ind) => {
                     pollution.push({
@@ -1880,13 +1933,13 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
                     });
                 })
             } else {*/
-            let key = '';
 
             let response = {};
 
             //console.log('time total =', Date.now() - start1);
 
             response.tza4 = tza4_templ;
+            response.data = data;
             resp.json({ response });
         });
 

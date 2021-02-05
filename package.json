@@ -20,7 +20,7 @@
     "bootstrap": "^4.1.0",
     "browserify-fs": "^1.0.0",
     "canvas2pdf": "^1.0.5",
-    "carbone": "^1.1.0",
+    "carbone": "^1.2.1",
     "chalk": "^2.0.1",
     "chance": "^1.0.16",
     "chart.js": "^2.7.2",

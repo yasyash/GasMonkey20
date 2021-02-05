@@ -52,6 +52,7 @@ import { saveAs } from 'file-saver'
 import canvas2pdf from 'canvas2pdf/src/canvas2pdf';
 
 import { dateAddReportAction } from './actions/dateAddAction';
+import { toUpper } from 'ramda';
 
 
 
@@ -251,7 +252,7 @@ class MenuReport extends Component {
                 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол', 'Атм. давление', 'Темп. внешняя',
                 'Скорость ветра', 'Влажность внеш.', 'Направление ветра', 'Интенс. осадков'],
             chemical: '',
-            autoHideDuration: isEmpty(autoHideDuration) ? 3000: autoHideDuration
+            autoHideDuration: isEmpty(autoHideDuration) ? 3000 : autoHideDuration
         };
 
 
@@ -366,7 +367,7 @@ class MenuReport extends Component {
             var dom = document.createElement('monthly_report');
         };
 
-        if ((this.props.report_type == 'tza4') ||(this.props.report_type == 'tza4_auto')){
+        if ((this.props.report_type == 'tza4') || (this.props.report_type == 'tza4_auto')) {
             var _html = document.getElementById('tza4_report');
             var dom = document.createElement('tza4_report');
         };
@@ -490,6 +491,8 @@ class MenuReport extends Component {
         if (this.props.report_type == 'tza4')
             date = new Date(dateReportEnd).format('MM-Y');
 
+            if (this.props.report_type == 'tza4_auto')
+            date = new Date(dateReportEnd).format('MM-Y');
 
         if (!isEmpty(this.props.data_4_report)) {
 
@@ -546,6 +549,8 @@ class MenuReport extends Component {
         if (this.props.report_type == 'tza4')
             date = new Date(dateReportEnd).format('MM-Y');
 
+        if (this.props.report_type == 'tza4_auto')
+            date = new Date(dateReportEnd).format('MM-Y')
 
         if (!isEmpty(this.props.data_4_report)) {
 
@@ -553,7 +558,7 @@ class MenuReport extends Component {
 
             data_4_report[0].station = this.translit(data_4_report[0].station);
 
-            if (this.props.report_type != 'tza4') {
+            if ((this.props.report_type != 'csv') ) {
 
                 this.props.reportXlsGen({ report: this.props.report_type, station: this.translit(this.props.station_name), date: date, data_4_report: data_4_report, chemical: this.translit(chemical), checked_meteo: this.props.checked_meteo }).then(response => {
                     //var xhr = new XMLHttpRequest();
@@ -578,107 +583,153 @@ class MenuReport extends Component {
 
             else {
                 // console.log("TZA")
-                var filename = this.props.report_type + '_report_station_' + this.translit(this.props.station_name) + '_substance_' + this.translit(chemical) + '_' + date + '.csv';//TZA_4_Report_station_PNZ 1_Substance_CO_03-2020.xlsx"
-                var data = this.props.data_4_report;
-                var pollution = data[0].values[0].pollution;
+                if (this.props.report_type == 'tza4') {
+                    var filename = this.props.report_type + '_report_station_' + this.translit(this.props.station_name) + '_substance_' + this.translit(chemical) + '_' + date + '.csv';//TZA_4_Report_station_PNZ 1_Substance_CO_03-2020.xlsx"
+                    var data = this.props.data_4_report;
+                    var pollution = data[0].values[0].pollution;
 
-                var str_hdr = ';;;;;;;;;;;;;;;;Таблица;«ТЗА-4»;;;;;;;;;;;;;;;;\r\n';
+                    var str_hdr = ';;;;;;;;;;;;;;;;Таблица;«ТЗА-4»;;;;;;;;;;;;;;;;\r\n';
 
-                str_hdr += ';;;;;;;;;;;;;;;;;;;;;;;;;;год ' + data[0].values[0].year + '; месяц ;' + data[0].values[0].month + ';;;;;\r\n';
-                str_hdr += 'D;P;01 час;02  час;03  час;04  час;05  час;06  час;07  час;08  час;09  час;10  час;11  час;12  час;13  час;14  час;15  час;16  час;17  час;18  час;19  час;20  час;21  час;22  час;23  час;24  час;Sum Qc;n;Qc;Qm;T Qm;Tq\r\n';
+                    str_hdr += ';;;;;;;;;;;;;;;;;;;;;;;;;;год ' + data[0].values[0].year + '; месяц ;' + data[0].values[0].month + ';;;;;\r\n';
+                    str_hdr += 'D;P;01 час;02  час;03  час;04  час;05  час;06  час;07  час;08  час;09  час;10  час;11  час;12  час;13  час;14  час;15  час;16  час;17  час;18  час;19  час;20  час;21  час;22  час;23  час;24  час;Sum Qc;n;Qc;Qm;T Qm;Tq\r\n';
 
-                var str_body = '';
-                var legend = ['D – дата, P – признак непрерывности,'];
-                legend.push('SumQc – сумма концентраций за сутки,');
-                legend.push('n – число случаев за сутки,');
-                legend.push('Qc – средняя концентрация за сутки,');
-                legend.push(' Qm – максимальная концентрация за сутки,');
-                legend.push('TQm – время наступления максимальной концентрации за сутки,');
-                legend.push(' Tq – продолжительность периода при Q > ПДК,');
-                legend.push('М – число случаев за месяц (SumQc, n, Qc),');
-                legend.push('Max Qc – максимальная среднесуточная концентрация за месяц,');
-                legend.push('TmaxQc – дата наблюдения MaxQc,');
-                legend.push('SumDcc – количество дней с Qс > ПДКсс.');
-                var i = 0;
-                if (!this.props.checked_meteo) {
-                    pollution.forEach(item => {
+                    var str_body = '';
+                    var legend = ['D – дата, P – признак непрерывности,'];
+                    legend.push('SumQc – сумма концентраций за сутки,');
+                    legend.push('n – число случаев за сутки,');
+                    legend.push('Qc – средняя концентрация за сутки,');
+                    legend.push(' Qm – максимальная концентрация за сутки,');
+                    legend.push('TQm – время наступления максимальной концентрации за сутки,');
+                    legend.push(' Tq – продолжительность периода при Q > ПДК,');
+                    legend.push('М – число случаев за месяц (SumQc, n, Qc),');
+                    legend.push('Max Qc – максимальная среднесуточная концентрация за месяц,');
+                    legend.push('TmaxQc – дата наблюдения MaxQc,');
+                    legend.push('SumDcc – количество дней с Qс > ПДКсс.');
+                    var i = 0;
+                    if (!this.props.checked_meteo) {
+                        pollution.forEach(item => {
 
-                        str_body += item.time + ';' + item.P + ';' + item.h1 + ';' + item.h2 + ';' + item.h3 + ';' + item.h4 +
-                            ';' + item.h5 + ';' + item.h6 + ';' + item.h7 + ';' + item.h8 + ';' + item.h9 + ';' + item.h10 + ';' + item.h11 +
-                            ';' + item.h12 + ';' + item.h13 + ';' + item.h14 + ';' + item.h15 + ';' + item.h16 + ';' + item.h17 + ';' + item.h18 +
-                            ';' + item.h19 + ';' + item.h20 + ';' + item.h21 + ';' + item.h22 + ';' + item.h23 + ';' + item.h24 + ';' + item.SumQc +
-                            ';' + item.n + ';' + item.Qc + ';' + item.Qm + ';' + item.Tm + ';' + item.Tq;
+                            str_body += item.time + ';' + item.P + ';' + item.h1 + ';' + item.h2 + ';' + item.h3 + ';' + item.h4 +
+                                ';' + item.h5 + ';' + item.h6 + ';' + item.h7 + ';' + item.h8 + ';' + item.h9 + ';' + item.h10 + ';' + item.h11 +
+                                ';' + item.h12 + ';' + item.h13 + ';' + item.h14 + ';' + item.h15 + ';' + item.h16 + ';' + item.h17 + ';' + item.h18 +
+                                ';' + item.h19 + ';' + item.h20 + ';' + item.h21 + ';' + item.h22 + ';' + item.h23 + ';' + item.h24 + ';' + item.SumQc +
+                                ';' + item.n + ';' + item.Qc + ';' + item.Qm + ';' + item.Tm + ';' + item.Tq;
 
-                        if (i < legend.length)
-                            str_body += ';' + legend[i];
+                            if (i < legend.length)
+                                str_body += ';' + legend[i];
 
-                        i++;
+                            i++;
 
-                        str_body += '\r\n';
-                    });
+                            str_body += '\r\n';
+                        });
+                    } else {
+                        pollution.forEach(item => {
+
+                            str_body += item.time + ';' + item.P + ';' + item.h1 + ';' + item.h2 + ';' + item.h3 + ';' + item.h4 +
+                                ';' + item.h5 + ';' + item.h6 + ';' + item.h7 + ';' + item.h8 + ';' + item.h9 + ';' + item.h10 + ';' + item.h11 +
+                                ';' + item.h12 + ';' + item.h13 + ';' + item.h14 + ';' + item.h15 + ';' + item.h16 + ';' + item.h17 + ';' + item.h18 +
+                                ';' + item.h19 + ';' + item.h20 + ';' + item.h21 + ';' + item.h22 + ';' + item.h23 + ';' + item.h24 + ';' + item.SumQc +
+                                ';' + item.n + ';' + item.Qc + ';' + item.Qm + ';' + item.Tm + ';' + item.Tq;
+                            str_body += '\r\n';
+                            let _tmp = [];
+                            item.Temp.forEach(_item => {
+
+                                _tmp.push(String(_item).replace('.', ','));
+                            });
+                            item.Temp = _tmp;
+                            _tmp = [];
+                            item.Hum.forEach(_item => {
+
+                                _tmp.push(String(_item).replace('.', ','));
+                            });
+                            item.Hum = _tmp;
+                            _tmp = [];
+                            item.Spd.forEach(_item => {
+
+                                _tmp.push(String(_item).replace('.', ','));
+                            });
+                            item.Spd = _tmp;
+                            _tmp = [];
+                            item.Dir.forEach(_item => {
+
+                                _tmp.push(String(_item).replace('.', ','));
+                            });
+                            item.Dir = _tmp;
+
+                            str_body += 'Темп., С;;' + item.Temp.join(';');
+                            str_body += '\r\n';
+                            str_body += 'Влажн., %;;' + item.Hum.join(';');
+                            str_body += '\r\n';
+                            str_body += 'Напр. ветра, град.;;' + item.Spd.join(';');
+                            str_body += '\r\n';
+                            str_body += 'Скор. ветра, м/с;;' + item.Dir.join(';');
+
+                            if (i < legend.length)
+                                str_body += ';' + legend[i];
+
+                            i++;
+
+                            str_body += '\r\n';
+                        });
+
+                    }
+                    str_body += ';;;;;;;;;;;;;;;;;;;;;;;;;M;' + data[0].values[0].M_SumQc + ';' + data[0].values[0].M_n + ';' + data[0].values[0].M_Qc + '\r\n';
+                    str_body += ';;;;;;;;;;;;;;;;;;;;;;;;;Max Qc;' + data[0].values[0].Max_Qc + ';;;\r\n';
+                    str_body += ';;;;;;;;;;;;;;;;;;;;;;;;;Tmax Qc;' + data[0].values[0].Tmax_Qc + ';;;\r\n';
+                    str_body += ';;;;;;;;;;;;;;;;;;;;;;;;;Sum Dcc;' + data[0].values[0].Sum_Dcc + ';;;\r\n';
+                    //'D – дата, P – признак непрерывности, SumQc – сумма концентраций за сутки, n – число случаев за сутки, Qc – средняя концентрация за сутки, Qm – максимальная концентрация за сутки, TQm – время наступления максимальной концентрации за сутки, Tq – продолжительность периода при Q > ПДК, М – число случаев за месяц (SumQc, n, Qc), Max Qc – максимальная среднесуточная концентрация за месяц, TmaxQc – дата наблюдения MaxQc, SumDcc – количество дней с Qс > ПДКсс.';
+
+
+                    var file = [str_hdr + '\r\n' + str_body];
+
+                    var blob = new Blob([file], { type: "text/plain;charset=utf-8" });
+
+                    saveAs(blob, filename);
                 } else {
-                    pollution.forEach(item => {
+                    var filename = toUpper (this.props.report_type)+'_2015_' + '_report_station_' + this.translit(this.props.station_name) + '_' + date + '.csv';//TZA_4_Report_station_PNZ 1_Substance_CO_03-2020.xlsx"
+                    var data = this.props.data_4_report;
+                    var pollution = data[0].values[0].pollution;
 
-                        str_body += item.time + ';' + item.P + ';' + item.h1 + ';' + item.h2 + ';' + item.h3 + ';' + item.h4 +
-                            ';' + item.h5 + ';' + item.h6 + ';' + item.h7 + ';' + item.h8 + ';' + item.h9 + ';' + item.h10 + ';' + item.h11 +
-                            ';' + item.h12 + ';' + item.h13 + ';' + item.h14 + ';' + item.h15 + ';' + item.h16 + ';' + item.h17 + ';' + item.h18 +
-                            ';' + item.h19 + ';' + item.h20 + ';' + item.h21 + ';' + item.h22 + ';' + item.h23 + ';' + item.h24 + ';' + item.SumQc +
-                            ';' + item.n + ';' + item.Qc + ';' + item.Qm + ';' + item.Tm + ';' + item.Tq;
-                        str_body += '\r\n';
-                        let _tmp =[];
-                        item.Temp.forEach(_item => {
+                    var str_hdr = ';;;;;;;;;;;Таблица;«ТЗА-4»;;;;;;;;;;;;;;;;;;;;;\r\n';
+                    str_hdr += ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\r\n';
+                    str_hdr += ';;;Пост;;;;;;;;;;;год ' + data[0].values[0].year + '; месяц ;' + data[0].values[0].month + ';;;;;;;;;;;;;;;;;\r\n';
+                    str_hdr += ';;;' + data[0].station + ';;Координаты ;поста;;;;;;;;Широта: ;'+data[0].values[0].lat+';;Долгота: ;'+data[0].values[0].lon+';;;;;;;;;;;;;;;\r\n';
+                    str_hdr += ';;;Ветер;;;;;;;;Концентрация ;примесей, ;мг/м3;;;;;;;;;;;;;;;;;;;;\r\n';
+                    str_hdr += 'Дата;Срок;Темп., С ;напр., гр. ;скорость, м/с ;Отн. влаж., % ;NO          ;NO2          ;NH3          ;SO2          ;H2S          ;O3          ;CO          ;CH2O        ;PM1          ;PM2.5        ;PM10        ;Пыль общая;бензол      ;толуол      ;этилбензол;м,п-ксилол;о-ксилол;хлорбензол;стирол      ;фенол       ;;;;;;;;\r\n';
+
+
+
+
+                    var str_body = '';
+                    
+                    var i = 0;
+                        pollution.forEach((item,i) => {
+
+                            str_body += item.day + ';' + item.time + ';' + item.tempr + ';' + item.dir + ';' + item.spd+ ';' + item.hum + ';' +
+                             item.valueNO + ';' + item.valueNO2 + ';' + item.valueNH3 + ';' + item.valueSO2 +
+                            ';' + item.valueH2S + ';' + item.valueO3 + ';' + item.valueCO + ';' + item.valueCH2O + ';' + item.valuePM1 + ';' + item.valuePM25 + ';' + item.valuePM10 +
+                            ';' + item.valueTSP + ';' + item.valueC6H6 + ';' + item.valueC7H8 + ';' + item.valueC8H10 + ';' + item.valueC8H10MP + ';' + item.valueC8H10O + ';' + item.valueC6H5Cl +
+                            ';' + item.valueC8H8 + ';' + item.valueC6H5OH + ';'+  ';' + ';;;;;;' ;
+
+
+
                             
-                            _tmp.push(String(_item).replace('.', ','));
+
+                            str_body += '\r\n';
                         });
-                        item.Temp = _tmp;
-                        _tmp=[];
-                        item.Hum.forEach(_item => {
-                            
-                            _tmp.push(String(_item).replace('.', ','));
-                        });
-                        item.Hum = _tmp;
-                        _tmp=[];
-                        item.Spd.forEach(_item => {
-                            
-                            _tmp.push(String(_item).replace('.', ','));
-                        });
-                        item.Spd = _tmp;
-                        _tmp=[];
-                        item.Dir.forEach(_item => {
-                            
-                            _tmp.push(String(_item).replace('.', ','));
-                        });
-                        item.Dir = _tmp;
+                    
 
-                        str_body += 'Темп., С;;' + item.Temp.join(';');
-                        str_body += '\r\n';
-                        str_body += 'Влажн., %;;' + item.Hum.join(';');
-                        str_body += '\r\n';
-                        str_body += 'Напр. ветра, град.;;' + item.Spd.join(';');
-                        str_body += '\r\n';
-                        str_body += 'Скор. ветра, м/с;;' + item.Dir.join(';');
+                    
+                   
+                    //'D – дата, P – признак непрерывности, SumQc – сумма концентраций за сутки, n – число случаев за сутки, Qc – средняя концентрация за сутки, Qm – максимальная концентрация за сутки, TQm – время наступления максимальной концентрации за сутки, Tq – продолжительность периода при Q > ПДК, М – число случаев за месяц (SumQc, n, Qc), Max Qc – максимальная среднесуточная концентрация за месяц, TmaxQc – дата наблюдения MaxQc, SumDcc – количество дней с Qс > ПДКсс.';
 
-                        if (i < legend.length)
-                            str_body += ';' + legend[i];
 
-                        i++;
+                    var file = [str_hdr + '\r\n' + str_body];
 
-                        str_body += '\r\n';
-                    });
+                    var blob = new Blob([file], { type: "text/plain;charset=utf-8" });
 
+                    saveAs(blob, filename);
                 }
-                str_body += ';;;;;;;;;;;;;;;;;;;;;;;;;M;' + data[0].values[0].M_SumQc + ';' + data[0].values[0].M_n + ';' + data[0].values[0].M_Qc + '\r\n';
-                str_body += ';;;;;;;;;;;;;;;;;;;;;;;;;Max Qc;' + data[0].values[0].Max_Qc + ';;;\r\n';
-                str_body += ';;;;;;;;;;;;;;;;;;;;;;;;;Tmax Qc;' + data[0].values[0].Tmax_Qc + ';;;\r\n';
-                str_body += ';;;;;;;;;;;;;;;;;;;;;;;;;Sum Dcc;' + data[0].values[0].Sum_Dcc + ';;;\r\n';
-                //'D – дата, P – признак непрерывности, SumQc – сумма концентраций за сутки, n – число случаев за сутки, Qc – средняя концентрация за сутки, Qm – максимальная концентрация за сутки, TQm – время наступления максимальной концентрации за сутки, Tq – продолжительность периода при Q > ПДК, М – число случаев за месяц (SumQc, n, Qc), Max Qc – максимальная среднесуточная концентрация за месяц, TmaxQc – дата наблюдения MaxQc, SumDcc – количество дней с Qс > ПДКсс.';
-
-
-                var file = [str_hdr + '\r\n' + str_body];
-
-                var blob = new Blob([file], { type: "text/plain;charset=utf-8" });
-
-                saveAs(blob, filename);
             }
 
         }
@@ -788,7 +839,7 @@ class MenuReport extends Component {
 
         }
 
-        if ((this.props.report_type == 'tza4')|| (this.props.report_type == 'tza4_auto')) {
+        if ((this.props.report_type == 'tza4') || (this.props.report_type == 'tza4_auto')) {
             var dateReportBegin = new Date(new Date(value).getFullYear(), new Date(value).getMonth(), '1', '0', '0').format('Y-MM-ddTHH:mm');
             var dateReportEnd = new Date(new Date(value).getFullYear(), new Date(value).getMonth(), this.daysInMonth(new Date(value).getMonth()), '23', '59', '59').format('Y-MM-ddTHH:mm:SS');
             dateAddReportAction({ 'dateReportBegin': dateReportBegin });
@@ -800,15 +851,15 @@ class MenuReport extends Component {
                     'dateReportBegin': dateReportBegin, 'dateReportEnd': dateReportEnd, chemical: this.state.chemical
                 });
 
-            } 
-            if (!isEmpty(this.props.station_name)  && (this.props.report_type == 'tza4_auto'))  {
+            }
+            if (!isEmpty(this.props.station_name) && (this.props.report_type == 'tza4_auto')) {
                 this.props.handleReportChange({
                     station_name: this.props.station_name, station_actual: this.props.station_actual,
                     'dateReportBegin': dateReportBegin, 'dateReportEnd': dateReportEnd, chemical: this.state.chemical
                 });
             }
 
-            
+
 
         }
 
@@ -887,7 +938,7 @@ class MenuReport extends Component {
                                 label="дата отчета"
                                 type="date"
                                 defaultValue={new Date(this.props.dateReportBegin).format('Y-MM-dd')}
-                                value ={new Date(this.props.dateReportBegin).format('Y-MM-dd')}
+                                value={new Date(this.props.dateReportBegin).format('Y-MM-dd')}
                                 className={classes.textField}
                                 // selectProps={this.state.dateReportBegin}
                                 onChange={(event) => { this.handlePickerChange(event) }}
@@ -902,7 +953,7 @@ class MenuReport extends Component {
                             type="month"
                             defaultValue={new Date(this.props.dateReportBegin).format('Y-MM')}
                             className={classes.textFieldWide}
-                            value ={new Date(this.props.dateReportBegin).format('Y-MM')}
+                            value={new Date(this.props.dateReportBegin).format('Y-MM')}
                             // selectProps={this.state.dateReportBegin}
                             onChange={(event) => { this.handlePickerChange(event) }}
                             InputLabelProps={{
@@ -912,12 +963,12 @@ class MenuReport extends Component {
 
                         />}
 
-                        {((this.state.report_type == 'tza4')||((this.state.report_type == 'tza4_auto'))) && <TextField
+                        {((this.state.report_type == 'tza4') || ((this.state.report_type == 'tza4_auto'))) && <TextField
                             id="dateReportBegin"
                             label="дата отчета"
                             type="month"
                             defaultValue={new Date(this.props.dateReportBegin).format('Y-MM')}
-                            value ={new Date(this.props.dateReportBegin).format('Y-MM')}
+                            value={new Date(this.props.dateReportBegin).format('Y-MM')}
                             className={classes.textFieldWide}
                             // selectProps={this.state.dateReportBegin}
                             onChange={(event) => { this.handlePickerChange(event) }}
@@ -1022,4 +1073,4 @@ MenuReport.propTypes = {
     classes: PropTypes.object.isRequired
 }
 
-export default connect(mapStateToProps) (withStyles(styles)(MenuReport));
+export default connect(mapStateToProps)(withStyles(styles)(MenuReport));

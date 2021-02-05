@@ -10,22 +10,22 @@ import FileDownload from 'js-file-download';
 
 export function reportGen(paramstr) {
     return dispatch => {
-        const data = JSON.stringify(paramstr);
-        console.log('parameters is ', data);
+        //const data = JSON.stringify(paramstr);
+        //console.log('parameters is ', data);
 
-        return Axios.create({ responseType: 'blob' }).get('/api/operative_report/', { params: { data } })
+        return Axios.create({ responseType: 'blob' }).post('/api/operative_report/', paramstr  )
             .then(resp => {
                 return resp;
-            })//.then(file => { FileDownload(file, 'report.docx'); });
+            }).catch(err => { console.log('error is ', err) });//.then(file => { FileDownload(file, 'report.docx'); });
     }
 };
 
 export function reportXlsGen(paramstr) {
     return dispatch => {
-        const data = JSON.stringify(paramstr);
-        console.log('parameters is ', data);
+        //const data = JSON.stringify(paramstr);
+        //console.log('parameters is ', data);
 
-        return Axios.create({ responseType: 'blob' }).get('/api/operative_report/report_excel', { params: { data } })
+        return Axios.create({ responseType: 'blob' }).post('/api/operative_report/report_excel',  paramstr)
             .then(resp => {
                 return resp;
 

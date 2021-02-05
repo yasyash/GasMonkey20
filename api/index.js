@@ -26,7 +26,10 @@ app.use(cors());
 //var staticPath = path.join(__dirname, '/');
 //app.use(express.static(staticPath));
 
-app.use(bodyParser.json());
+//app.use(bodyParser.json());
+
+app.use(bodyParser.json({limit: '10mb', extended: true}));
+app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
 
 app.use('/api/users', users);
 app.use('/api/auth', auth);

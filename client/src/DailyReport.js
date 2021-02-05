@@ -400,12 +400,14 @@ class DailyReport extends React.Component {
                                         dt[element.chemical] = sum.toFixed(3);
                                     }
 
-                                    if ((local_cnt < 15) || (is_range)) //data credit detection
+                                    if ((local_cnt < 15)) //data credit detection
                                     {
-                                        dt[element.chemical + '_err'] = true;
+                                        dt[element.chemical + '_err'] = 'alert_empty';
                                     } else {
-                                        dt[element.chemical + '_err'] = false;
-
+                                        if ((is_range)) //data credit detection
+                                            dt[element.chemical + '_err'] = 'alert_range';
+                                        else
+                                            dt[element.chemical + '_err'] = 'alert_success';
                                     }
 
 
@@ -525,8 +527,8 @@ class DailyReport extends React.Component {
                                 'counter_macs5': counter_macs5,
                                 'counter_macs10': counter_macs10,
                                 's_index': Number(max / element.max_m).toFixed(1),
-                               // 'gre_repeatably': Number(sum_alert / counter * 100).toFixed(2),
-                               // 'pollut_ind': Number(quotient / element.max_m * coefficient).toFixed(1),
+                                // 'gre_repeatably': Number(sum_alert / counter * 100).toFixed(2),
+                                // 'pollut_ind': Number(quotient / element.max_m * coefficient).toFixed(1),
                                 'className': class_css
                             })
                         };
@@ -783,27 +785,30 @@ class DailyReport extends React.Component {
                 <Typography component="div" style={{ padding: 2 * 1 }} id="daily_report">
 
                     <div style={{ textAlign: '-webkit-center', position: 'center' }}>
-                            <table style={{ "width": '70%', textAlign:'center' }} id="daily_report_table_legend">
-                                <tbody>
-                                    <tr>
-                                        <td >Легенда:&nbsp;&nbsp;&nbsp; </td>
-                                        <td className=
-                                            {classes['alert_range']}>Нарушена достоверность данных</td>
-                                        <td >&nbsp;&nbsp;&nbsp; </td>
-                                        <td className=
-                                            {classes['alert_macs1_ylw']}>Превышение менее 5 ПДК</td>
-                                        <td > &nbsp;&nbsp;&nbsp;</td>
-                                        <td className=
-                                            {classes['alert_macs5_orng']}>Превышение 5 и менее 10 ПДК</td>
-                                        <td >&nbsp;&nbsp;&nbsp; </td>
-                                        <td className=
-                                            {classes['alert_macs10_red']}>Превышение более 10 ПДК</td>
+                        <table style={{ "width": '90%', textAlign: 'center' }} id="daily_report_table_legend">
+                            <tbody>
+                                <tr>
+                                    <td >Легенда:&nbsp;&nbsp;&nbsp; </td>
+                                    <td className=
+                                        {classes['alert_empty']}>Нарушена достоверность - менее 75% данных</td>
+                                    <td >&nbsp;&nbsp;&nbsp; </td>
+                                    <td className=
+                                        {classes['alert_range']}>Нарушена достоверность - выход за диапазон прибора</td>
+                                    <td >&nbsp;&nbsp;&nbsp; </td>
+                                    <td className=
+                                        {classes['alert_macs1_ylw']}>Превышение менее 5 ПДК</td>
+                                    <td > &nbsp;&nbsp;&nbsp;</td>
+                                    <td className=
+                                        {classes['alert_macs5_orng']}>Превышение 5 и менее 10 ПДК</td>
+                                    <td >&nbsp;&nbsp;&nbsp; </td>
+                                    <td className=
+                                        {classes['alert_macs10_red']}>Превышение более 10 ПДК</td>
 
 
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <table style={{ "width": '100%' }} id="daily_report_table_header">
                         <tbody>
                             <tr>
@@ -915,45 +920,45 @@ class DailyReport extends React.Component {
                                         <td> {option.spd}</td>
                                         <td> {option.hum}</td>
                                         <td className=
-                                            {option.NO_err ? classes['alert_range'] : classes['alert_success']}> {option.NO}</td>
+                                            { classes[option.NO_err]}> {option.NO}</td>
                                         <td className=
-                                            {option.NO2_err ? classes['alert_range'] : classes['alert_success']}> {option.NO2}</td>
+                                            {classes[option.NO2_err]}> {option.NO2}</td>
                                         <td className=
-                                            {option.NH3_err ? classes['alert_range'] : classes['alert_success']}> {option.NH3}</td>
+                                            {classes[option.NH3_err]}> {option.NH3}</td>
                                         <td className=
-                                            {option.SO2_err ? classes['alert_range'] : classes['alert_success']}> {option.SO2}</td>
+                                            {classes[option.SO2_err]}> {option.SO2}</td>
                                         <td className=
-                                            {option.H2S_err ? classes['alert_range'] : classes['alert_success']}> {option.H2S}</td>
+                                            {classes[option.H2S_err]}> {option.H2S}</td>
                                         <td className=
-                                            {option.O3_err ? classes['alert_range'] : classes['alert_success']}> {option.O3}</td>
+                                            {classes[option.O3_err]}> {option.O3}</td>
                                         <td className=
-                                            {option.CO_err ? classes['alert_range'] : classes['alert_success']}> {option.CO}</td>
+                                            {classes[option.CO_err]}> {option.CO}</td>
                                         <td className=
-                                            {option.CH2O_err ? classes['alert_range'] : classes['alert_success']}> {option.CH2O}</td>
+                                            {classes[option.CH2O_err]}> {option.CH2O}</td>
                                         <td className=
-                                            {option.PM1_err ? classes['alert_range'] : classes['alert_success']}> {option.PM1}</td>
+                                            {classes[option.PM1_err]}> {option.PM1}</td>
                                         <td className=
-                                            {option['PM2.5_err'] ? classes['alert_range'] : classes['alert_success']}> {option['PM2.5']}</td>
+                                            {classes[option['PM2.5_err']]}> {option['PM2.5']}</td>
                                         <td className=
-                                            {option.PM10_err ? classes['alert_range'] : classes['alert_success']}> {option.PM10}</td>
+                                            {classes[option['PM10_err']]}> {option.PM10}</td>
                                         <td className=
-                                            {option['Пыль общая_err'] ? classes['alert_range'] : classes['alert_success']}> {option['Пыль общая']}</td>
+                                            {classes[option['Пыль общая_err']]}> {option['Пыль общая']}</td>
                                         <td className=
-                                            {option['бензол_err'] ? classes['alert_range'] : classes['alert_success']}>  {option['бензол']}</td>
+                                            {classes[option['бензол_err']]}>  {option['бензол']}</td>
                                         <td className=
-                                            {option['толуол_err'] ? classes['alert_range'] : classes['alert_success']}> {option['толуол']}</td>
+                                            {classes[option['толуол_err']]}> {option['толуол']}</td>
                                         <td className=
-                                            {option['этилбензол_err'] ? classes['alert_range'] : classes['alert_success']}> {option['этилбензол']}</td>
+                                            {classes[option['этилбензол_err']]}> {option['этилбензол']}</td>
                                         <td className=
-                                            {option['м,п-ксилол_err'] ? classes['alert_range'] : classes['alert_success']}> {option['м,п-ксилол']}</td>
+                                            {classes[option['м,п-ксилол_err']]}> {option['м,п-ксилол']}</td>
                                         <td className=
-                                            {option['о-ксилол_err'] ? classes['alert_range'] : classes['alert_success']}> {option['о-ксилол']}</td>
+                                            {classes[option['о-ксилол_err']]}> {option['о-ксилол']}</td>
                                         <td className=
-                                            {option['хлорбензол_err'] ? classes['alert_range'] : classes['alert_success']}> {option['хлорбензол']}</td>
+                                            {classes[option['хлорбензол_err']]}> {option['хлорбензол']}</td>
                                         <td className=
-                                            {option['стирол_err'] ? classes['alert_range'] : classes['alert_success']}> {option['стирол']}</td>
+                                            {classes[option['стирол_err']]}> {option['стирол']}</td>
                                         <td className=
-                                            {option['фенол_err'] ? classes['alert_range'] : classes['alert_success']}> {option['фенол']}</td>
+                                            {classes[option['фенол_err']]}> {option['фенол']}</td>
 
 
 
