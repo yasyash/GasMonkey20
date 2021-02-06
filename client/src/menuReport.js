@@ -491,7 +491,7 @@ class MenuReport extends Component {
         if (this.props.report_type == 'tza4')
             date = new Date(dateReportEnd).format('MM-Y');
 
-            if (this.props.report_type == 'tza4_auto')
+        if (this.props.report_type == 'tza4_auto')
             date = new Date(dateReportEnd).format('MM-Y');
 
         if (!isEmpty(this.props.data_4_report)) {
@@ -558,7 +558,7 @@ class MenuReport extends Component {
 
             data_4_report[0].station = this.translit(data_4_report[0].station);
 
-            if ((this.props.report_type != 'csv') ) {
+            if ((this.props.report_type != 'csv')) {
 
                 this.props.reportXlsGen({ report: this.props.report_type, station: this.translit(this.props.station_name), date: date, data_4_report: data_4_report, chemical: this.translit(chemical), checked_meteo: this.props.checked_meteo }).then(response => {
                     //var xhr = new XMLHttpRequest();
@@ -686,14 +686,14 @@ class MenuReport extends Component {
 
                     saveAs(blob, filename);
                 } else {
-                    var filename = toUpper (this.props.report_type)+'_2015_' + '_report_station_' + this.translit(this.props.station_name) + '_' + date + '.csv';//TZA_4_Report_station_PNZ 1_Substance_CO_03-2020.xlsx"
+                    var filename = toUpper(this.props.report_type) + '_2015_' + '_report_station_' + this.translit(this.props.station_name) + '_' + date + '.csv';//TZA_4_Report_station_PNZ 1_Substance_CO_03-2020.xlsx"
                     var data = this.props.data_4_report;
                     var pollution = data[0].values[0].pollution;
 
                     var str_hdr = ';;;;;;;;;;;Таблица;«ТЗА-4»;;;;;;;;;;;;;;;;;;;;;\r\n';
                     str_hdr += ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\r\n';
                     str_hdr += ';;;Пост;;;;;;;;;;;год ' + data[0].values[0].year + '; месяц ;' + data[0].values[0].month + ';;;;;;;;;;;;;;;;;\r\n';
-                    str_hdr += ';;;' + data[0].station + ';;Координаты ;поста;;;;;;;;Широта: ;'+data[0].values[0].lat+';;Долгота: ;'+data[0].values[0].lon+';;;;;;;;;;;;;;;\r\n';
+                    str_hdr += ';;;' + data[0].station + ';;Координаты ;поста;;;;;;;;Широта: ;' + data[0].values[0].lat + ';;Долгота: ;' + data[0].values[0].lon + ';;;;;;;;;;;;;;;\r\n';
                     str_hdr += ';;;Ветер;;;;;;;;Концентрация ;примесей, ;мг/м3;;;;;;;;;;;;;;;;;;;;\r\n';
                     str_hdr += 'Дата;Срок;Темп., С ;напр., гр. ;скорость, м/с ;Отн. влаж., % ;NO          ;NO2          ;NH3          ;SO2          ;H2S          ;O3          ;CO          ;CH2O        ;PM1          ;PM2.5        ;PM10        ;Пыль общая;бензол      ;толуол      ;этилбензол;м,п-ксилол;о-ксилол;хлорбензол;стирол      ;фенол       ;;;;;;;;\r\n';
 
@@ -701,26 +701,26 @@ class MenuReport extends Component {
 
 
                     var str_body = '';
-                    
-                    var i = 0;
-                        pollution.forEach((item,i) => {
 
-                            str_body += item.day + ';' + item.time + ';' + item.tempr + ';' + item.dir + ';' + item.spd+ ';' + item.hum + ';' +
-                             item.valueNO + ';' + item.valueNO2 + ';' + item.valueNH3 + ';' + item.valueSO2 +
+                    var i = 0;
+                    pollution.forEach((item, i) => {
+
+                        str_body += item.day + ';' + item.time + ';' + item.tempr + ';' + item.dir + ';' + item.spd + ';' + item.hum + ';' +
+                            item.valueNO + ';' + item.valueNO2 + ';' + item.valueNH3 + ';' + item.valueSO2 +
                             ';' + item.valueH2S + ';' + item.valueO3 + ';' + item.valueCO + ';' + item.valueCH2O + ';' + item.valuePM1 + ';' + item.valuePM25 + ';' + item.valuePM10 +
                             ';' + item.valueTSP + ';' + item.valueC6H6 + ';' + item.valueC7H8 + ';' + item.valueC8H10 + ';' + item.valueC8H10MP + ';' + item.valueC8H10O + ';' + item.valueC6H5Cl +
-                            ';' + item.valueC8H8 + ';' + item.valueC6H5OH + ';'+  ';' + ';;;;;;' ;
+                            ';' + item.valueC8H8 + ';' + item.valueC6H5OH + ';' + ';' + ';;;;;;';
 
 
 
-                            
 
-                            str_body += '\r\n';
-                        });
-                    
 
-                    
-                   
+                        str_body += '\r\n';
+                    });
+
+
+
+
                     //'D – дата, P – признак непрерывности, SumQc – сумма концентраций за сутки, n – число случаев за сутки, Qc – средняя концентрация за сутки, Qm – максимальная концентрация за сутки, TQm – время наступления максимальной концентрации за сутки, Tq – продолжительность периода при Q > ПДК, М – число случаев за месяц (SumQc, n, Qc), Max Qc – максимальная среднесуточная концентрация за месяц, TmaxQc – дата наблюдения MaxQc, SumDcc – количество дней с Qс > ПДКсс.';
 
 
@@ -916,7 +916,7 @@ class MenuReport extends Component {
                                         onChange={this.handleSelectChange}
                                         inputProps={{
                                             name: 'station_name',
-                                            id: 'station_name',
+                                            id: 'station_name_' + this.props.report_type,
                                         }}>
                                         {(stationsList) &&// if not empty
                                             stationsList.map((option, i) => (
