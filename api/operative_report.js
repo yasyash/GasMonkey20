@@ -1800,7 +1800,7 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
                             if (local_sum / 10 > (macs_one[0].max_m))
                                 class_css = 'alert_macs10_red'; //outranged of a macs in  more than 10 times
 
-                            if (local_cnt < 15)
+                            if (local_cnt < 10)
                                 class_css = 'alert_empty'
 
                             if (range_out_counter > 4)

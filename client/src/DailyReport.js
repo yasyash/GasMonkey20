@@ -400,7 +400,7 @@ class DailyReport extends React.Component {
                                         dt[element.chemical] = sum.toFixed(3);
                                     }
 
-                                    if ((local_cnt < 15)) //data credit detection
+                                    if ((local_cnt < 10)) //data credit detection
                                     {
                                         dt[element.chemical + '_err'] = 'alert_empty';
                                     } else {
