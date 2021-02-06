@@ -365,6 +365,7 @@ class DailyReport extends React.Component {
 
                                 let sum = 0;
                                 let local_cnt = 0;
+                                is_range = false;
                                 if (!isEmpty(obj)) {
                                     obj.forEach((unit => {
                                         sum += unit.measure;
