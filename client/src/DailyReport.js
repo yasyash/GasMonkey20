@@ -361,7 +361,7 @@ class DailyReport extends React.Component {
                                             hum = _hum / _hum_cnt;
                                     }
                                 }
-                                time_in = up_sec;
+                                time_in = up_sec +1 ;
 
                                 let sum = 0;
                                 let local_cnt = 0;
@@ -425,7 +425,7 @@ class DailyReport extends React.Component {
                                             class_css = 'alert_macs5_orng'; //outranged of a macs in 5 times
 
                                         } else {
-                                            if (sum > element.max_m) {
+                                            if (sum >= element.max_m) {
                                                 counter_macs1++;
                                                 class_css = 'alert_macs1_ylw'; //outranged of a macs in 1 time
 
