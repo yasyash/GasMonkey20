@@ -172,7 +172,8 @@ class DailyReport extends React.Component {
 
     handleReportChange = (state) => {
         this.setState({ station_actual: state.station_actual, station_name: state.station_name });
-
+        this.setState({ isLoading: true });
+        this.setState({ autoHideDuration: 200000, snack_msg: 'Дождитесь завершения операции...' });
         let params = {};
         //e.preventDefault();
         // this.setState({ dateReportBegin: this.props.dateReportBegin, dateReportEnd: this.props.dateReportEnd });
