@@ -403,23 +403,34 @@ class DailyReport extends React.Component {
 
                                     if ((local_cnt < 10)) //data credit detection
                                     {
-                                        dt[element.chemical + '_err'] = 'alert_empty';
+                                        class_css = 'alert_empty';
                                     } else {
                                         if ((is_range)) //data credit detection
-                                            dt[element.chemical + '_err'] = 'alert_range';
+                                            class_css = 'alert_range';
                                         else
-                                            dt[element.chemical + '_err'] = 'alert_success';
+                                            class_css = 'alert_success';
                                     }
-
 
                                     data_raw[ind] = dt;
 
-                                    if (sum > element.max_m)
+                                    if (sum > element.max_m) {
                                         counter_macs1++;
-                                    if ((sum / 5) >= element.max_m)
+                                        class_css = 'alert_macs1_ylw'; //outranged of a macs in 1 time
+
+                                    }
+                                    if ((sum / 5) >= element.max_m) {
                                         counter_macs5++;
-                                    if ((sum / 10) >= element.max_m)
+                                        class_css = 'alert_macs5_orng'; //outranged of a macs in 5 times
+
+                                    }
+                                    if ((sum / 10) >= element.max_m) {
+
                                         counter_macs10++;
+                                        class_css = 'alert_macs10_red'; //outranged of a macs in  more than 10 times
+
+                                    }
+
+                                    dt[element.chemical + '_err'] = class_css;
 
                                 } else {
                                     let dt = data_raw[ind];
@@ -921,7 +932,7 @@ class DailyReport extends React.Component {
                                         <td> {option.spd}</td>
                                         <td> {option.hum}</td>
                                         <td className=
-                                            { classes[option.NO_err]}> {option.NO}</td>
+                                            {classes[option.NO_err]}> {option.NO}</td>
                                         <td className=
                                             {classes[option.NO2_err]}> {option.NO2}</td>
                                         <td className=
