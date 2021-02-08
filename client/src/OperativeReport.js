@@ -227,15 +227,15 @@ class OperativeReport extends React.Component {
 
                         if (element.chemical == 'CO') {
                             rows_measure.push({
-                                'chemical': element.chemical + ', мг/м.куб.', 'macs': element.max_m,
+                                'chemical': element.chemical + ', мг/м.куб.', 'macs': element.max_m < 900 ? String(element.max_m).replace('.', ',') : '',
                                 'date': new Date(filter[filter.length - 1].date_time).format('dd-MM-Y'),
-                                'time': new Date(filter[filter.length - 1].date_time).format('H:mm:SS'), 'value': quotient.toFixed(1), 'className': class_css
+                                'time': new Date(filter[filter.length - 1].date_time).format('H:mm:SS'), 'value': String(quotient.toFixed(1)).replace('.', ','), 'className': class_css
                             })
                         } else {
                             rows_measure.push({
-                                'chemical': element.chemical + ', мг/м.куб.', 'macs': element.max_m,
+                                'chemical': element.chemical + ', мг/м.куб.', 'macs': element.max_m < 900 ? String(element.max_m).replace('.', ',') : '',
                                 'date': new Date(filter[filter.length - 1].date_time).format('dd-MM-Y'),
-                                'time': new Date(filter[filter.length - 1].date_time).format('H:mm:SS'), 'value': quotient.toFixed(3), 'className': class_css
+                                'time': new Date(filter[filter.length - 1].date_time).format('H:mm:SS'), 'value': String(quotient.toFixed(3)).replace('.', ','), 'className': class_css
                             })
                         }
                     };
@@ -289,23 +289,23 @@ class OperativeReport extends React.Component {
                 // rendering of array for docx template
                 rows_measure.forEach((element, ind) => {
                     pollution.push({
-                        num: ind + 1, chemical: element.chemical, macs: String(element.macs).replace('.',','), date: element.date,
-                        time: element.time, value: element.value.replace('.',',')
+                        num: ind + 1, chemical: element.chemical, macs: String(element.macs).replace('.', ','), date: element.date,
+                        time: element.time, value: element.value.replace('.', ',')
                     });
                 })
                 values.push({
-                    date: new Date().format('dd-MM-Y H:mm:SS'), pollution: pollution, P: rows_service.P.replace('.',','),
-                    Tout: rows_service.Tout.replace('.',','),
-                    Hout: rows_service.Hout.replace('.',','),
-                    WindV: rows_service.WindV.replace('.',','),
-                    WindD: rows_service.WindD.replace('.',','),
-                    Rain: rows_service.Rain.replace('.',','),
-                    Hin: rows_service.Hin.replace('.',','),
-                    Ts1: rows_service.Ts1.replace('.',','),
-                    Ts2: rows_service.Ts2.replace('.',','),
-                    Ts3: rows_service.Ts3.replace('.',','),
-                    Tin: rows_service.Tin.replace('.',','),
-                    U: rows_service.U.replace('.',','),
+                    date: new Date().format('dd-MM-Y H:mm:SS'), pollution: pollution, P: rows_service.P.replace('.', ','),
+                    Tout: rows_service.Tout.replace('.', ','),
+                    Hout: rows_service.Hout.replace('.', ','),
+                    WindV: rows_service.WindV.replace('.', ','),
+                    WindD: rows_service.WindD.replace('.', ','),
+                    Rain: rows_service.Rain.replace('.', ','),
+                    Hin: rows_service.Hin.replace('.', ','),
+                    Ts1: rows_service.Ts1.replace('.', ','),
+                    Ts2: rows_service.Ts2.replace('.', ','),
+                    Ts3: rows_service.Ts3.replace('.', ','),
+                    Tin: rows_service.Tin.replace('.', ','),
+                    U: rows_service.U.replace('.', ','),
                     Dr: rows_service.Dr ? 'взлом' : 'отсутствует',
                     Fr: rows_service.Fr ? 'пожар' : 'отсутствует'
                 });
