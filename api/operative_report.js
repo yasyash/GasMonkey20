@@ -703,7 +703,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                                         local_counter_macs5++;
 
                                     } else {
-                                        if (local_sum > element.max_m) //element.max_d may be changed to max_m on Krasnoyarsk demand
+                                        if (local_sum >= element.max_m) //element.max_d may be changed to max_m on Krasnoyarsk demand
                                         {
                                             counter_macs1++;
                                             local_counter_macs1++;
