@@ -46,7 +46,7 @@ router.post('/', authenticate, (req, resp) => {
     // const between_date = ['2018-05-21 00:00:00', '2018-05-21 19:05:00']
     // console.log('sensors ', data.sensors[0]);
     //if (data.report == 'operative') {
-   
+
     if (data.report == 'operative') {
         var filename = 'OperativeReport_station_' + data.station + '_' + data.date + '.docx';
         var filereport = 'operative_templ.docx'
@@ -658,6 +658,10 @@ router.get('/get_monthly', authenticate, (req, resp) => {
 
                                     sum_all += unit.measure;
 
+                                    day_counter++;
+                                    counter++;
+
+
                                     //if (unit.measure < min) {
                                     //   min = unit.measure;
                                     //   min_time = date.format(new Date(unit.date_time), 'DD-MM-YYYY HH:mm:SS');
@@ -720,8 +724,6 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                             //};
                             if (local_cnt > 0) {
                                 frame_count++;
-                                day_counter++;
-                                counter++;
 
                             }
 
@@ -793,13 +795,13 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                         }
 
                         //pollution calculation
-                        if (day_counter > 1) {
+                        if (day_counter > 0) {
                             sum = sum / day_counter;
                             let dt = _data_raw[ind];
+                            class_css = 'alert_success';
 
                             if (element.chemical == 'CO') {
                                 dt[element.chemical] = sum.toFixed(1);
-                                class_css = 'alert_success';
 
 
                             } else {
@@ -848,7 +850,8 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                     meteo_complete = true;
 
                     //after all days
-                    quotient = (sum_all / counter);
+                    if (counter > 0)
+                        quotient = (sum_all / counter);
                     //range_macs = quotient / element.max_d;
                     class_css = 'alert_success';
                     times++;
@@ -884,7 +887,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
 
                         'chemical': element.chemical,
                         'value': quotient.toFixed(3),
-                        'counts': counter,
+                        'counts': frame_count,
                         //'min': min, 'min_time': min_time,
                         'max': max, 'max_time': max_time,
                         'min_sum': min_sum, 'min_time_sum': min_time_sum,
@@ -894,7 +897,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                         'counter_macs10': counter_macs10,
                         's_index': Number(element.max_m) < 900 ? Number(max / element.max_m).toFixed(1) : '-',
                         'gre_repeatably': Number(element.max_m) < 900 ? Number(Number(counter_macs1 + counter_macs5 + counter_macs10) / counter * 100).toFixed(2) : '-',
-                        'sigma': Math.sqrt(sum_pow2 / (counter - 1)).toFixed(3),
+                        'sigma': Math.sqrt(sum_pow2 / (frame_count - 1)).toFixed(3),
                         //'pollut_ind': Number(element.max_d) < 900 ? Number(quotient / element.max_d * coefficient).toFixed(1) : '-',
                         'className': class_css
                     })
