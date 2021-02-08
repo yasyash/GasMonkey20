@@ -413,20 +413,24 @@ class DailyReport extends React.Component {
 
                                     data_raw[ind] = dt;
 
-                                    if (sum > element.max_m) {
-                                        counter_macs1++;
-                                        class_css = 'alert_macs1_ylw'; //outranged of a macs in 1 time
 
-                                    }
-                                    if ((sum / 5) >= element.max_m) {
-                                        counter_macs5++;
-                                        class_css = 'alert_macs5_orng'; //outranged of a macs in 5 times
 
-                                    }
                                     if ((sum / 10) >= element.max_m) {
 
                                         counter_macs10++;
                                         class_css = 'alert_macs10_red'; //outranged of a macs in  more than 10 times
+                                    } else {
+                                        if ((sum / 5) >= element.max_m) {
+                                            counter_macs5++;
+                                            class_css = 'alert_macs5_orng'; //outranged of a macs in 5 times
+
+                                        } else {
+                                            if (sum > element.max_m) {
+                                                counter_macs1++;
+                                                class_css = 'alert_macs1_ylw'; //outranged of a macs in 1 time
+
+                                            }
+                                        }
 
                                     }
 
