@@ -621,9 +621,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
 
                         let sum = 0; //day sum
                         let day_counter = 0;
-                        let local_counter_macs1 = 0;
-                        let local_counter_macs5 = 0;
-                        let local_counter_macs10 = 0;
+
 
                         minute20_frame.forEach((minutes_20, _inx) => {
                             let time_now = 0;
@@ -643,6 +641,9 @@ router.get('/get_monthly', authenticate, (req, resp) => {
                             time_to = time_from + 1;
                             let local_cnt = 0;
                             let local_sum = 0;
+                            let local_counter_macs1 = 0;
+                            let local_counter_macs5 = 0;
+                            let local_counter_macs10 = 0;
                             class_css = 'alert_success';
                             range_out_counter = 0;
 
