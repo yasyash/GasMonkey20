@@ -133,6 +133,11 @@ const styles = theme => ({
         marginRight: theme.spacing.unit,
         width: 180,
     },
+    textFieldWidest: {
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit,
+        width: 210,
+    },
     _td: { textAlign: 'center' },
 
     alert_macs1_ylw: {
@@ -811,6 +816,11 @@ class MenuReport extends Component {
     handlePickerChange = (event) => {
         const value = event.target.value;
         const id = event.target.id;
+
+        if (this.props.report_type == 'operative') {
+            this.props.handlePickerChange(value);
+        }
+        
         if (this.props.report_type == 'daily') {
             dateAddReportAction({ 'dateReportBegin': value + 'T00:00' });
             dateAddReportAction({ 'dateReportEnd': value + 'T23:59' });
@@ -932,6 +942,20 @@ class MenuReport extends Component {
                             </form>
 
                         </div>
+
+                        {(this.state.report_type == 'operative') &&
+                            <TextField
+                                id="dateReportBegin"
+                                label="завершение периода"
+                                type="datetime-local"
+                                value={new Date(this.props.dateReportEnd).format('Y-MM-ddTHH:mm')}
+                                className={classes.textFieldWidest}
+                                // selectProps={this.state.dateReportBegin}
+                                onChange={(event) => { this.handlePickerChange(event) }}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                            />}
                         {(this.state.report_type == 'daily') &&
                             <TextField
                                 id="dateReportBegin"

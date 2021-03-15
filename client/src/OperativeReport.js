@@ -32,7 +32,7 @@ import MenuReport from './menuReport';
 
 import { queryOperativeEvent, queryEvent, queryMeteoEvent } from './actions/queryActions';
 import { reportGen, reportXlsGen } from './actions/genReportActions';
-import { dateAddAction } from './actions/dateAddAction';
+import { dateAddAction, dateAddReportAction } from './actions/dateAddAction';
 
 
 const styles = theme => ({
@@ -171,6 +171,18 @@ class OperativeReport extends React.Component {
         return data;
     };
 
+    handlePickerChange(date) {
+
+        let _newDate = Date.parse(date);
+        let ms = _newDate - 1200000;
+
+        let dateTimeBegin = new Date(ms).format('Y-MM-ddTHH:mm');
+
+        this.setState({ dateTimeEnd: date, dateTimeBegin: dateTimeBegin });
+        dateAddReportAction({ 'dateReportBegin': dateTimeBegin });
+        dateAddReportAction({ 'dateReportEnd': date });
+    }
+    
     handleReportChange = (state) => {
         this.setState({ station_actual: state.station_actual, station_name: state.station_name });
 
@@ -268,7 +280,7 @@ class OperativeReport extends React.Component {
                                 rows_service[key] = false;
                             };
                             if ((key == 'U')) {
-                                rows_service[key] = '223.1';
+                                rows_service[key] = '223,1';
                             };
                             if ((key == 'Ts1')) {
                                 rows_service[key] = (Number(rows_service.Tin) + 0.51).toFixed(2);
@@ -295,17 +307,17 @@ class OperativeReport extends React.Component {
                 })
                 values.push({
                     date: new Date().format('dd-MM-Y H:mm:SS'), pollution: pollution, P: rows_service.P.replace('.', ','),
-                    Tout: rows_service.Tout.replace('.', ','),
-                    Hout: rows_service.Hout.replace('.', ','),
-                    WindV: rows_service.WindV.replace('.', ','),
-                    WindD: rows_service.WindD.replace('.', ','),
-                    Rain: rows_service.Rain.replace('.', ','),
-                    Hin: rows_service.Hin.replace('.', ','),
-                    Ts1: rows_service.Ts1.replace('.', ','),
-                    Ts2: rows_service.Ts2.replace('.', ','),
-                    Ts3: rows_service.Ts3.replace('.', ','),
-                    Tin: rows_service.Tin.replace('.', ','),
-                    U: rows_service.U.replace('.', ','),
+                    Tout: String(rows_service.Tout).replace('.', ','),
+                    Hout: String(rows_service.Hout).replace('.', ','),
+                    WindV: String(rows_service.WindV).replace('.', ','),
+                    WindD: String(rows_service.WindD).replace('.', ','),
+                    Rain: String(rows_service.Rain).replace('.', ','),
+                    Hin: String(rows_service.Hin).replace('.', ','),
+                    Ts1: String(rows_service.Ts1).replace('.', ','),
+                    Ts2: String(rows_service.Ts2).replace('.', ','),
+                    Ts3: String(rows_service.Ts3).replace('.', ','),
+                    Tin: String(rows_service.Tin).replace('.', ','),
+                    U: String(rows_service.U).replace('.', ','),
                     Dr: rows_service.Dr ? 'взлом' : 'отсутствует',
                     Fr: rows_service.Fr ? 'пожар' : 'отсутствует'
                 });
@@ -410,7 +422,7 @@ class OperativeReport extends React.Component {
                     dateReportEnd={this.state.dateTimeEnd}
                     report_type='operative'
                     data_4_report={this.state.data_4_report}
-
+                    handlePickerChange={this.handlePickerChange.bind(this)}
                     handleReportChange={this.handleReportChange.bind(this)}
                     handleSnackClose={this.handleSnackClose.bind(this)}
 
