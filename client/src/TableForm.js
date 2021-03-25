@@ -357,7 +357,6 @@ class TableForm extends React.Component {
         // this.loadData().then(data => this.setState({ stationsList: data }));
 
         //if (this.props.station_actual.length > 0) { deleteActiveStationsList(); };
-
         this.loadData(0).then(data => {
             if (this.props.station_actual) {
                 let selection = [];
@@ -371,6 +370,15 @@ class TableForm extends React.Component {
                     this.setState({ station_actual: this.props.station_actual });
                 }
             }
+
+            if (data.length == 1) {
+                this.setState({ selection: [data[0]._id] });
+                this.setState({ station_actual: [data[0].id] });
+                this.setState({ station_names: [{ [data[0].id]: data[0].namestation }] });
+                if (this.props.station_actual.length == 0)
+                    this.handleClick();
+            }
+
             this.setState({ stationsList: data });
 
         });

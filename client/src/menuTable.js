@@ -147,7 +147,7 @@ class MenuTable extends Component {
             isEdit,
             isForceToggle,
             isData,
-            isTableStation, 
+            isTableStation,
             selectAll
         } = props;
 
@@ -191,7 +191,7 @@ class MenuTable extends Component {
         this.handleChange = this.handleChange.bind(this);
         this.handleEdit = this.handleEdit.bind(this);
         this.handleUpdateSQLClick = this.handleUpdateSQLClick.bind(this);
-       // this.handleToggleAll = this.handleToggleAll.bind(this);
+        // this.handleToggleAll = this.handleToggleAll.bind(this);
     }
 
     handleExcelSave = (name) => {
@@ -220,8 +220,8 @@ class MenuTable extends Component {
             data[1].values[0].pollution.forEach(item => {
                 if (item.date_time.indexOf('Время') == -1) {
                     if (keys.length == 0) {
-                        str_body += item.date_time + ";" + item.typemeasure + ";" + item.measure.replace('.',',') + ";" + item.unit_name + ";" +
-                        ( item.is_range ? "вне диапазона" : "в диапазоне") + ";" +item.is_alert + ";" + item.serialnum + ";" + "\r\n";
+                        str_body += item.date_time + ";" + item.typemeasure + ";" + item.measure.replace('.', ',') + ";" + item.unit_name + ";" +
+                            ((item.is_range == "вне диапазона") ? "вне диапазона" : "в диапазоне") + ";" + item.is_alert + ";" + item.serialnum + ";" + "\r\n";
                     }
                     else {
                         str_body += item.date_time;
@@ -293,7 +293,7 @@ class MenuTable extends Component {
         })
     }
     handleToggleAll() {
-        
+
 
         if ((event.target.name === 'selectable') ||
             (event.target.name === 'multiSelectable') ||
@@ -302,7 +302,7 @@ class MenuTable extends Component {
             if (!this.state.showCheckboxes) {
                 event.target.name = 'showCheckboxes'
                 this.props.handleToggleAll();
-                
+
             }
         }
     };
