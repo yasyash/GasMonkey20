@@ -12,6 +12,7 @@ import TxtFieldGroup from './stuff/txtField';
 import { queryEvent } from './actions/queryActions';
 import { addDataList, deleteDataList } from './actions/dataAddActions';
 import { updateData } from './actions/adminActions';
+import { query4EditEvent } from './actions/queryActions';
 
 import MenuTable from './menuTable';
 import { Tabs, Tab } from 'material-ui/Tabs';
@@ -150,14 +151,13 @@ class TableData extends React.Component {
                 this.setState({ isEdit: false });
                 this.setState({ isForceToggle: true });
 
-                this.handleToggleEdit( {target : {name: 'isEdit'}}, false, true); //generation syntetic event
-               // this.setState({ isForceToggle: false });
+                this.handleToggleEdit({ target: { name: 'isEdit' } }, false, true); //generation syntetic event
+                // this.setState({ isForceToggle: false });
 
             };
     }
 
-    handleForceToggle()
-    {
+    handleForceToggle() {
         this.setState({ isForceToggle: false });
     }
 
@@ -330,23 +330,53 @@ class TableData extends React.Component {
     handleToggleEdit(event, toggled, isForceToggle) {
         var _props;
         var title = [];
-
+        var name = event.target.name;
 
         if (toggled) {
-            this.setState({ isForceToggle: false });
-            this.setState({
-                [event.target.name]: toggled
-            });
-            _props = this.props.title;
+            if (this.props.sensors_actual.length > 0) {
+                let params = {};
 
-            _props.map(item => {
-                if (item.Cell === null) item.Cell = this.renderEditable;
-                title.push(item);
+                params.period_from = this.props.dateTimeBegin;
+                params.period_to = this.props.dateTimeEnd;
 
-            });
 
-            this.setState({ title: title });
+                params.station = this.props.station_actual;
+                params.sensors = [this.props.sensors_actual[0].serialnum];
 
+                this.props.query4EditEvent(params).then(data => {
+                    if (data.length > 0) {
+                        this.setState({ dataList: data })
+                        this.setState({ isLoading: true })
+                        this.setState({ snack_msg: 'Данные измерений для редактирования успешно загружены...' })
+                        //addActiveSensorsList(this.state.selection);
+                        //getFirstActiveStationsList();
+                        //addActiveStationsList({ sensors: this.state.selection });
+
+                    }
+                    else {
+                        this.setState({ isLoading: true })
+                        this.setState({ snack_msg: 'Данные отсутствуют...' })
+
+                    }
+
+                    this.setState({ isForceToggle: false });
+                    this.setState({
+                        [name]: toggled
+                    });
+                    _props = this.props.title;
+
+                    _props.map(item => {
+                        if (item.Cell === null) item.Cell = this.renderEditable;
+                        title.push(item);
+
+                    });
+
+                    this.setState({ title: title });
+                });
+
+
+
+            }
         }
         else {
             if (isForceToggle) {
@@ -520,9 +550,9 @@ class TableData extends React.Component {
                     handleUpdateData={this.handleUpdateData.bind(this)}
                     reportXGen={this.props.reportXGen.bind(this)}
                     height={this.state.height}
-                    auth ={auth}
-                    dataList = {this.props.dataList}
-                    stationName = {this.props.station_actual}
+                    auth={auth}
+                    dataList={this.props.dataList}
+                    stationName={this.props.station_actual}
 
                 />
                 <br />
@@ -687,6 +717,7 @@ function mapStateToProps(state, ownProps) {
           enableSelectAll: state.enableSelectAll,
           deselectOnClickaway: state.deselectOnClickaway,
           showCheckboxes: state.showCheckboxes,*/
+        sensors_actual: state.sensorsList,
         dataList: state.dataList,
         sensorsList: state.sensorsList,
         title: title,
@@ -707,4 +738,4 @@ TableData.contextType = {
     router: PropTypes.object.isRequired
 }
 
-export default connect(mapStateToProps, { queryEvent, addDataList, deleteDataList, updateData, reportXGen })(withRouter(withStyles(styles)(TableData)));
+export default connect(mapStateToProps, { queryEvent, addDataList, deleteDataList, updateData, reportXGen, query4EditEvent })(withRouter(withStyles(styles)(TableData)));
