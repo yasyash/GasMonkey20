@@ -362,7 +362,7 @@ class DailyReport extends React.Component {
                                             hum = _hum / _hum_cnt;
                                     }
                                 }
-                                time_in = up_sec +1 ;
+                                time_in = up_sec + 1;
 
                                 let sum = 0;
                                 let local_cnt = 0;
@@ -544,7 +544,7 @@ class DailyReport extends React.Component {
                                 'counter_macs5': counter_macs5,
                                 'counter_macs10': counter_macs10,
                                 's_index': Number(max / element.max_m).toFixed(1),
-                                // 'gre_repeatably': Number(sum_alert / counter * 100).toFixed(2),
+                                'gre_repeatably': Number(element.max_m) < 900 ? Number(Number(counter_macs1 + counter_macs5 + counter_macs10) / frame_count * 100).toFixed(2) : '-',
                                 // 'pollut_ind': Number(quotient / element.max_m * coefficient).toFixed(1),
                                 'className': class_css
                             })
@@ -567,7 +567,7 @@ class DailyReport extends React.Component {
                 let counter_macs10 = [];
                 let className = [];
                 let s_index = [];
-                //let gre_repeatably = [];
+                let gre_repeatably = [];
                 //let pollut_ind = [];
 
                 chemical.push('Наименование');
@@ -581,7 +581,7 @@ class DailyReport extends React.Component {
                 counter_macs5.push('Количество превышений 5*ПДК');
                 counter_macs10.push('Количество превышений 10*ПДК');
                 s_index.push('Стандартный индекс');
-                //gre_repeatably.push('Наибольшая повторяемость, %');
+                gre_repeatably.push('Наибольшая повторяемость, %');
                 //pollut_ind.push('ИЗА');
                 className.push('ClassName');
 
@@ -613,7 +613,7 @@ class DailyReport extends React.Component {
                                 counter_macs5.push(element.counter_macs5);
                                 counter_macs10.push(element.counter_macs10);
                                 s_index.push(String(element.s_index).replace('.', ','));
-                                //gre_repeatably.push(String(element.gre_repeatably).replace('.', ','));
+                                gre_repeatably.push(String(element.gre_repeatably).replace('.', ','));
                                 //pollut_ind.push(String(element.pollut_ind).replace('.', ','));
                                 className.push(element.className);
                             } else {
@@ -628,7 +628,7 @@ class DailyReport extends React.Component {
                                 counter_macs5.push(element.counter_macs5);
                                 counter_macs10.push(element.counter_macs10);
                                 s_index.push(String(element.s_index).replace('.', ','));
-                                //gre_repeatably.push(String(element.gre_repeatably).replace('.', ','));
+                                gre_repeatably.push(String(element.gre_repeatably).replace('.', ','));
                                 //pollut_ind.push(String(element.pollut_ind).replace('.', ','));
                                 className.push(element.className);
                             }
@@ -647,7 +647,7 @@ class DailyReport extends React.Component {
                         counter_macs5.push('-');
                         counter_macs10.push('-');
                         s_index.push('-');
-                        //gre_repeatably.push('-');
+                        gre_repeatably.push('-');
                         //pollut_ind.push('-');
                         className.push('');
 
@@ -655,7 +655,7 @@ class DailyReport extends React.Component {
                 });
                 let _avrg_measure = [];
                 _avrg_measure.push(chemical, value, counts, max, max_time, min, min_time, counter_macs1, counter_macs5,
-                    counter_macs10, s_index, className);
+                    counter_macs10, s_index, gre_repeatably, className);
 
 
                 // rendering of array for docx template
