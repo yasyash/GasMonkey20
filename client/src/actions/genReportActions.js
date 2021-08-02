@@ -6,7 +6,7 @@ import fs from 'fs';
 
 import shortid from 'shortid';
 import isEmpty from 'lodash.isempty';
-import FileDownload from 'js-file-download';
+//import FileDownload from 'js-file-download';
 
 export function reportGen(paramstr) {
     return dispatch => {
