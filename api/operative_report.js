@@ -20,7 +20,7 @@ import mime from 'mime';
 import date from 'date-and-time';
 
 import carbone from 'carbone';
-
+import moment from 'moment';
 
 import Macs from '../models/macs';
 
@@ -404,7 +404,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
     let station_name = data.station_name;
 
     const between_date = [data.period_from, data.period_to];
-   
+
     const api_mo = spawnSync('./api/tst', [data.station, data.period_from + ':00', data.period_to + ':00', station_name]);
 
     //console.log(`stdout: ${api_mo.stdout}`);
@@ -456,7 +456,7 @@ router.get('/get_monthly', authenticate, (req, resp) => {
 
                                     }
                                 } else {
-                                    _temp[_chemical] =  new Date(__line[_indx]).format('dd-MM-yyyy');
+                                    _temp[_chemical] = new Date(__line[_indx]).format('dd-MM-yyyy');
 
                                 }
                             }
@@ -1918,9 +1918,203 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
     let chemic = data.chemic;
     let meteo_add = data.checked_meteo;
     const between_date = [data.period_from, data.period_to];
-    //console.log('time in =', Date.now());
-    //var start1 = Date.now();
-    loadMeteo(data.station, between_date).then(_result => {
+
+
+    const api_mo = spawnSync('./api/tza', [data.station, data.period_from + ':00', data.period_to + ':00', station_name]);
+
+    //console.log(`stdout: ${api_mo.stdout}`);
+
+    const template_chemical = ['time', 'temp', 'dir', 'spd', 'hum', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол'];
+
+    fs.readFile('./api/tza.csv', 'utf8',
+        function (err, __data) {
+            if (err) {
+                return console.log(err);
+            }
+            var data_raw = [], __str = [], avrg_measure = [];
+            avrg_measure.push(['Наименование', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол']);
+
+            var _strings = __data.split('\n');
+            var _lines = [];
+            var _index = 0;
+            _strings.forEach((_str, _ind) => {
+                _lines.push(_str.split(';'));
+            })
+
+            var _temp = [];
+            var _time, _temper, _dir, _spd, _hum;
+            var _one_frame = [];
+            var day_frame = [];
+            var prev_date = '';
+
+            _lines.forEach((__line, __ind) => {
+
+                if (__ind > 0) {
+
+                    let _date = new Date(__line[0]);
+                    if (!isNaN(_date.getTime())) {
+                        if (prev_date != '') {
+
+                            if ((_date.getDate() - prev_date.getDate()) > 0) {
+                                prev_date = new Date(__line[0]);
+                                data_raw.push({ [_index + 1]: day_frame });
+                                day_frame = [];
+                                _index++;
+                            }
+
+                        } else {
+
+                            prev_date = new Date(__line[0]);
+
+                        }
+
+                        template_chemical.forEach((_chemical, _indx) => {
+                       
+                            if (_indx > 4) {
+                                if (String(_chemical) == 'CO') {
+                                    _one_frame.push({ [_chemical]: isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ',') });
+                                } else {
+                                    _one_frame.push({ [_chemical]: isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ',') });
+
+                                }
+
+                            } else {
+                                if (_indx > 0) {
+                                    if (String(_chemical) == 'temp') {
+
+                                        _temp[0][_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ',');
+
+                                    } else {
+                                        _temp[0][_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(0)).replace('.', ',');
+
+                                    }
+                                } else {
+                                    _temp.push({ [_chemical]: [new Date(__line[_indx]).format('HH:mm')] })
+                                }
+                            }
+
+
+                        })
+
+                    }
+                    if (__line[0].toString().includes('_empty')) {
+                        template_chemical.forEach((_chemical, _indx) => {
+                            if (!isEmpty(__line[_indx]) && _indx >4) {
+
+                                let _tmp = _one_frame[(_indx-5)];
+                                _tmp ={..._tmp, [_chemical + '_class'] : 'alert_success'};
+
+                                _one_frame[Math.floor((_indx-5))] = _tmp;
+
+                                if (__line[_indx] == 'true') {
+                                    
+                                    let _tmp = _one_frame[(_indx-5)];
+                                    _tmp ={..._tmp, [_chemical + '_class'] : 'alert_empty'};
+ 
+                                    _one_frame[(_indx-5)] = _tmp;
+                                }
+
+                            }
+                        })
+                    }
+
+                    if (__line[0].toString().includes('_outrange')) {
+                        template_chemical.forEach((_chemical, _indx) => {
+                            if (!isEmpty(__line[_indx]) && _indx >4) {
+                                //if (__line[_indx] == 'false')
+                                //  __str.push({ [_chemical + '_class']: 'alert_succes' });
+                                if (__line[_indx] == 'true') {
+                                    let _tmp = _one_frame[(_indx-5)];
+                                    _tmp[_chemical + '_class'] = 'alert_range';
+                                    _one_frame[(_indx-5)] = _tmp;
+                                }
+
+                            }
+                        })
+                    }
+
+                    if (__line[0].toString().includes('_macs')) {
+                        template_chemical.forEach((_chemical, _indx) => {
+                            if (!isEmpty(__line[_indx])  && _indx >4 ) {
+                                if (__line[_indx] == '1') {
+                                    let _tmp = _one_frame[(_indx-5)];
+                                    _tmp[_chemical + '_class'] = 'alert_macs1_ylw';
+                                    _one_frame[(_indx-5)] = _tmp;
+                                }
+                                if (__line[_indx] == '5') {
+                                    let _tmp = _one_frame[(_indx-5)];
+                                    _tmp[_chemical + '_class'] = 'alert_macs5_orng';
+                                    _one_frame[(_indx-5)] = _tmp;
+                                }
+                                if (__line[_indx] == '10') {
+                                    let _tmp = _one_frame[(_indx-5)];
+                                    _tmp[_chemical + '_class'] = 'alert_macs10_red';
+                                    _one_frame[(_indx-5)] = _tmp;
+                                }
+
+                            }
+                        })
+                        _temper = _temp[0]['temp'];
+                        _time = _temp[0]['time'];
+                        _dir = _temp[0]['dir'];
+                        _spd = _temp[0]['spd'];
+                        _hum = _temp[0]['hum'];
+                        _temp = [];
+                        day_frame.push({ time: _time, tempr: _temper, dir: _dir, spd: _spd, hum: _hum, ..._one_frame });
+
+                        _one_frame = [];
+
+
+                    }
+
+
+
+
+                }
+
+
+            })
+            data_raw.push({ [_index + 1]: day_frame });
+
+
+            var pollution = [];
+            var values = [];
+            var _data = [];
+            data_raw.forEach((time, i) => {
+                time[i + 1].map((element, j) => {
+                    pollution.push({
+                        day: i + 1,
+                        time: element.time, tempr: String(element.tempr).replace('.', ','), dir: String(element.dir).replace('.', ','), spd: String(element.spd).replace('.', ','), hum: String(element.hum).replace('.', ','),
+                        valueNO: String(element[0].NO).replace('.', ','), valueNO2: String(element[1].NO2).replace('.', ','), valueNH3: String(element[2].NH3).replace('.', ','), valueSO2: String(element[3].SO2).replace('.', ','),
+                        valueH2S: String(element[4].H2S).replace('.', ','), valueO3: String(element[5].O3).replace('.', ','), valueCO: String(element[6].CO).replace('.', ','), valueCH2O: String(element[7].CH2O).replace('.', ','), valuePM1: String(element[8].PM1).replace('.', ','),
+                        valuePM25: String(element[9]['PM2.5']).replace('.', ','), valuePM10: String(element[10].PM10).replace('.', ','), valueTSP: String(element[11]['Пыль общая']).replace('.', ','),
+                        valueC6H6: String(element[12]['бензол']).replace('.', ','), valueC7H8: String(element[13]['толуол']).replace('.', ','), valueC8H10: String(element[14]['этилбензол']).replace('.', ','),
+                        valueC8H10MP: String(element[15]['м,п-ксилол']).replace('.', ','), valueC8H10O: String(element[16]['о-ксилол']).replace('.', ','), valueC6H5Cl: String(element[17]['хлорбензол']).replace('.', ','),
+                        valueC8H8: String(element[18]['стирол']).replace('.', ','), valueC6H5OH: String(element[19]['фенол']).replace('.', ',')
+                    });
+                });
+            })
+            values.push({
+                place: place,
+                lat: lat,
+                lon: lon,
+                year: date.format(new Date(data.period_from), 'YYYY'),
+                month: date.format(new Date(data.period_from), 'MM'), pollution: pollution
+
+            });
+
+            //  console.log('values ' + values);
+
+
+            _data.push({ station: station_name, values: values });
+
+            let response = {};
+
+            response.tza4 = data_raw;
+            response.data = _data;
+            resp.json({ response });
+        });
+    /* loadMeteo(data.station, between_date).then(_result => {
 
         //let _result_parse0 = JSON.stringify(_result);
         let meteo_all = _result;
@@ -2321,7 +2515,7 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
                         Qm: element[29].replace('.', ','), Tm: element[30], Tq: element[31]
                     });
                 })
-            } else {*/
+            } else {
 
             let response = {};
 
@@ -2332,7 +2526,7 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
             resp.json({ response });
         });
 
-    });
+    });*/
 });
 
 
