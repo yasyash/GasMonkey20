@@ -402,10 +402,11 @@ router.get('/get_monthly', authenticate, (req, resp) => {
     let obj = qs.parse(query);
     let data = JSON.parse(obj.data);
     let station_name = data.station_name;
-
+    let _period_from = new Date(data.period_from).format('Y-MM-ddTHH:mm:SS');
+    let _period_to = new Date(data.period_to).format('Y-MM-ddTHH:mm:SS');
     const between_date = [data.period_from, data.period_to];
 
-    const api_mo = spawnSync('./api/tst', [data.station, data.period_from + ':00', data.period_to + ':00', station_name]);
+    const api_mo = spawnSync('./api/tst', [data.station, _period_from, _period_to, station_name]);
 
     //console.log(`stdout: ${api_mo.stdout}`);
 
@@ -1918,9 +1919,11 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
     let chemic = data.chemic;
     let meteo_add = data.checked_meteo;
     const between_date = [data.period_from, data.period_to];
+    let _period_from = new Date(data.period_from).format('Y-MM-ddTHH:mm:SS');
+    let _period_to = new Date(data.period_to).format('Y-MM-ddTHH:mm:SS');
 
 
-    const api_mo = spawnSync('./api/tza', [data.station, data.period_from + ':00', data.period_to + ':00', station_name]);
+    const api_mo = spawnSync('./api/tza', [data.station, _period_from, _period_to, station_name]);
 
     //console.log(`stdout: ${api_mo.stdout}`);
 
@@ -1969,7 +1972,7 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
                         }
 
                         template_chemical.forEach((_chemical, _indx) => {
-                       
+
                             if (_indx > 4) {
                                 if (String(_chemical) == 'CO') {
                                     _one_frame.push({ [_chemical]: isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ',') });
@@ -1999,19 +2002,19 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
                     }
                     if (__line[0].toString().includes('_empty')) {
                         template_chemical.forEach((_chemical, _indx) => {
-                            if (!isEmpty(__line[_indx]) && _indx >4) {
+                            if (!isEmpty(__line[_indx]) && _indx > 4) {
 
-                                let _tmp = _one_frame[(_indx-5)];
-                                _tmp ={..._tmp, [_chemical + '_class'] : 'alert_success'};
+                                let _tmp = _one_frame[(_indx - 5)];
+                                _tmp = { ..._tmp, [_chemical + '_class']: 'alert_success' };
 
-                                _one_frame[Math.floor((_indx-5))] = _tmp;
+                                _one_frame[Math.floor((_indx - 5))] = _tmp;
 
                                 if (__line[_indx] == 'true') {
-                                    
-                                    let _tmp = _one_frame[(_indx-5)];
-                                    _tmp ={..._tmp, [_chemical + '_class'] : 'alert_empty'};
- 
-                                    _one_frame[(_indx-5)] = _tmp;
+
+                                    let _tmp = _one_frame[(_indx - 5)];
+                                    _tmp = { ..._tmp, [_chemical + '_class']: 'alert_empty' };
+
+                                    _one_frame[(_indx - 5)] = _tmp;
                                 }
 
                             }
@@ -2020,13 +2023,13 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
 
                     if (__line[0].toString().includes('_outrange')) {
                         template_chemical.forEach((_chemical, _indx) => {
-                            if (!isEmpty(__line[_indx]) && _indx >4) {
+                            if (!isEmpty(__line[_indx]) && _indx > 4) {
                                 //if (__line[_indx] == 'false')
                                 //  __str.push({ [_chemical + '_class']: 'alert_succes' });
                                 if (__line[_indx] == 'true') {
-                                    let _tmp = _one_frame[(_indx-5)];
+                                    let _tmp = _one_frame[(_indx - 5)];
                                     _tmp[_chemical + '_class'] = 'alert_range';
-                                    _one_frame[(_indx-5)] = _tmp;
+                                    _one_frame[(_indx - 5)] = _tmp;
                                 }
 
                             }
@@ -2035,21 +2038,21 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
 
                     if (__line[0].toString().includes('_macs')) {
                         template_chemical.forEach((_chemical, _indx) => {
-                            if (!isEmpty(__line[_indx])  && _indx >4 ) {
+                            if (!isEmpty(__line[_indx]) && _indx > 4) {
                                 if (__line[_indx] == '1') {
-                                    let _tmp = _one_frame[(_indx-5)];
+                                    let _tmp = _one_frame[(_indx - 5)];
                                     _tmp[_chemical + '_class'] = 'alert_macs1_ylw';
-                                    _one_frame[(_indx-5)] = _tmp;
+                                    _one_frame[(_indx - 5)] = _tmp;
                                 }
                                 if (__line[_indx] == '5') {
-                                    let _tmp = _one_frame[(_indx-5)];
+                                    let _tmp = _one_frame[(_indx - 5)];
                                     _tmp[_chemical + '_class'] = 'alert_macs5_orng';
-                                    _one_frame[(_indx-5)] = _tmp;
+                                    _one_frame[(_indx - 5)] = _tmp;
                                 }
                                 if (__line[_indx] == '10') {
-                                    let _tmp = _one_frame[(_indx-5)];
+                                    let _tmp = _one_frame[(_indx - 5)];
                                     _tmp[_chemical + '_class'] = 'alert_macs10_red';
-                                    _one_frame[(_indx-5)] = _tmp;
+                                    _one_frame[(_indx - 5)] = _tmp;
                                 }
 
                             }
