@@ -1485,12 +1485,8 @@ function read_monthly(data, appDir) {
     response.data_raw = data_raw;
     response.avrg_measure = avrg_measure;
     response.data = _data;
-    //console.log('END =', data_raw.length);
 
     return response;
-
-
-    //response.data = data;
 
 }
 
@@ -1942,7 +1938,7 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
 
     const template_chemical = ['time', 'temp', 'dir', 'spd', 'hum', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол'];
 
-    fs.readFile(appDir + '/tza.csv', 'utf8',
+    fs.readFile(appDir + '/tza.csv', { encoding: 'utf8', flag: 'r' },
         function (err, __data) {
             if (err) {
                 return console.log(err);
