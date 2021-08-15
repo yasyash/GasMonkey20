@@ -395,24 +395,28 @@ async function loadData_tza_auto(station, between_date, station_name, chemic) {
 
 };
 
-router.get('/get_monthly', authenticate, (req, resp) => {
+router.post('/get_monthly', authenticate, (req, resp) => {
     //  
 
-    let query = url.parse(req.url).query;
+    /*let query = url.parse(req.url).query;
     let obj = qs.parse(query);
-    let data = JSON.parse(obj.data);
+    let data = JSON.parse(obj.data);*/
+    let data = req.body;
+
     let station_name = data.station_name;
     let _period_from = new Date(data.period_from).format('Y-MM-ddTHH:mm:SS');
     let _period_to = new Date(data.period_to).format('Y-MM-ddTHH:mm:SS');
     const between_date = [data.period_from, data.period_to];
 
-    const api_mo = spawnSync('./api/tst', [data.station, _period_from, _period_to, station_name]);
+    var appDir = path.dirname(require.main.filename);
+
+    const api_mo = spawnSync(appDir + '/tst', [data.station, _period_from, _period_to, appDir]);
 
     //console.log(`stdout: ${api_mo.stdout}`);
 
     const template_chemical = ['time', 'temp', 'dir', 'spd', 'hum', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол'];
 
-    fs.readFile('./api/monthly.csv', 'utf8',
+    fs.readFile(appDir + '/monthly.csv', 'utf8',
         function (err, __data) {
             if (err) {
                 return console.log(err);
@@ -1921,15 +1925,16 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
     const between_date = [data.period_from, data.period_to];
     let _period_from = new Date(data.period_from).format('Y-MM-ddTHH:mm:SS');
     let _period_to = new Date(data.period_to).format('Y-MM-ddTHH:mm:SS');
-
-
-    const api_mo = spawnSync('./api/tza', [data.station, _period_from, _period_to, station_name]);
+    
+    var appDir = path.dirname(require.main.filename);
+    
+    const api_mo = spawnSync(appDir + '/tza', [data.station, _period_from, _period_to, appDir]);
 
     //console.log(`stdout: ${api_mo.stdout}`);
 
     const template_chemical = ['time', 'temp', 'dir', 'spd', 'hum', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол'];
 
-    fs.readFile('./api/tza.csv', 'utf8',
+    fs.readFile(appDir + '/tza.csv', 'utf8',
         function (err, __data) {
             if (err) {
                 return console.log(err);

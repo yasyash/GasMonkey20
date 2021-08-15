@@ -78,8 +78,15 @@ export function reportXGen(paramstr)
         const data = JSON.stringify(paramstr);
         //  console.log('parameters is ', data);
 
-        return Axios.get('/api/operative_report/get_monthly', { params: { data } })
-            .then(resp => resp.data.response);
+       // return Axios.get('/api/operative_report/get_monthly', { params: { data } })
+         //   .then(resp => resp.data.response);
+
+         return Axios.post('/api/operative_report/get_monthly',  paramstr)
+            .then(resp => {
+                return resp.data.response;
+
+                //console.log("OK ...")
+            }).catch(err => { console.log('error is ', err) });
 
     };
 
