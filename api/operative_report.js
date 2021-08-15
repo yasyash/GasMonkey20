@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { response } from 'express';
 import bcrypt from 'bcrypt';
 import Promise from 'bluebird';
 import isEmpty from 'lodash.isempty';
@@ -412,384 +412,14 @@ router.post('/get_monthly', authenticate, (req, resp) => {
 
     const api_mo = spawnSync(appDir + '/tst', [data.station, _period_from, _period_to, appDir]);
 
-    //console.log(`stdout: ${api_mo.stdout}`);
+    // console.log(`stdout: ${api_mo.stdout}`);
 
-    const template_chemical = ['time', 'temp', 'dir', 'spd', 'hum', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол'];
+    let response = read_monthly(data, appDir)
+    return resp.json({ response })
 
-    fs.readFile(appDir + '/monthly.csv', 'utf8',
-        function (err, __data) {
-            if (err) {
-                return console.log(err);
-            }
-            var data_raw = [], __str = [], avrg_measure = [];
-            avrg_measure.push(['Наименование', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол']);
 
-            var _strings = __data.split('\n');
-            var _lines = [];
-            var _index = -1;
-            _strings.forEach((_str, _ind) => {
-                _lines.push(_str.split(';'));
-            })
 
-            _lines.forEach((__line, __ind) => {
 
-                if (__ind > 0) {
-
-                    let _date = new Date(__line[0]);
-
-                    if (!isNaN(_date.getTime())) {
-                        data_raw.push({});
-                        _index++;
-
-                        template_chemical.forEach((_chemical, _indx) => {
-                            let _temp = data_raw[_index];
-                            if (_indx > 4) {
-                                if (String(_chemical) == 'CO') {
-                                    _temp[_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ',');
-                                } else {
-                                    _temp[_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ',');
-
-                                }
-
-                            } else {
-                                if (_indx > 0) {
-                                    if (String(_chemical) == 'temp') {
-                                        _temp[_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ',');
-
-                                    } else {
-                                        _temp[_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(0)).replace('.', ',');
-
-                                    }
-                                } else {
-                                    _temp[_chemical] = new Date(__line[_indx]).format('dd-MM-yyyy');
-
-                                }
-                            }
-
-                            data_raw[_index] = _temp;
-                        })
-                    }
-                    if (__line[0].toString().includes('_empty')) {
-                        template_chemical.forEach((_chemical, _indx) => {
-                            if (!isEmpty(__line[_indx])) {
-
-                                let _temp = data_raw[_index];
-                                _temp[_chemical + '_class'] = 'alert_success';
-                                data_raw[_index] = _temp;
-
-                                if (__line[_indx] == 'true') {
-                                    let _temp = data_raw[_index];
-                                    _temp[_chemical + '_class'] = 'alert_empty';
-                                    data_raw[_index] = _temp;
-                                }
-
-                            }
-                        })
-                    }
-
-                    if (__line[0].toString().includes('_outrange')) {
-                        template_chemical.forEach((_chemical, _indx) => {
-                            if (!isEmpty(__line[_indx])) {
-                                //if (__line[_indx] == 'false')
-                                //  __str.push({ [_chemical + '_class']: 'alert_succes' });
-                                if (__line[_indx] == 'true') {
-                                    let _temp = data_raw[_index];
-                                    _temp[_chemical + '_class'] = 'alert_range';
-                                    data_raw[_index] = _temp;
-                                }
-
-                            }
-                        })
-                    }
-
-                    if (__line[0].toString().includes('_macs')) {
-                        template_chemical.forEach((_chemical, _indx) => {
-                            if (!isEmpty(__line[_indx])) {
-                                if (__line[_indx] == '1') {
-                                    let _temp = data_raw[_index];
-                                    _temp[_chemical + '_class'] = 'alert_macs1_ylw';
-                                    data_raw[_index] = _temp;
-                                }
-                                if (__line[_indx] == '5') {
-                                    let _temp = data_raw[_index];
-                                    _temp[_chemical + '_class'] = 'alert_macs5_orng';
-                                    data_raw[_index] = _temp;
-                                }
-                                if (__line[_indx] == '10') {
-                                    let _temp = data_raw[_index];
-                                    _temp[_chemical + '_class'] = 'alert_macs10_red';
-                                    data_raw[_index] = _temp;
-                                }
-
-                            }
-                        })
-                    }
-
-
-
-                    if (__line[0].toString().includes('average')) {
-                        let _tmp = ["Среднемесячное значение"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                if (String(_chemical) == 'CO') {
-                                    _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
-                                } else {
-                                    _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
-
-                                }
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('count')) {
-                        let _tmp = ["Количество"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                _tmp.push(__line[_indx]);
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('max_measure')) {
-                        let _tmp = ["Максимальное значение"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                if (String(_chemical) == 'CO') {
-                                    _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
-                                } else {
-                                    _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
-
-                                }
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('max_time')) {
-                        let _tmp = ["Время максимального значения"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                _tmp.push(__line[_indx]);
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('min_measure')) {
-                        let _tmp = ["Минимальное значение"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                if (String(_chemical) == 'CO') {
-                                    _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
-                                } else {
-                                    _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
-
-                                }
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('min_time')) {
-                        let _tmp = ["Время минимального значения"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                _tmp.push(__line[_indx]);
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('max_concentration_measure')) {
-                        let _tmp = ["Макс. разовая концентрация"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                if (String(_chemical) == 'CO') {
-                                    _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
-                                } else {
-                                    _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
-
-                                }
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('time_max_concentration')) {
-                        let _tmp = ["Время наблюдения макс. р. концентрации"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                _tmp.push(__line[_indx]);
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('exceed_1')) {
-                        let _tmp = ["Количество превышений ПДК"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                _tmp.push(__line[_indx]);
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('exceed5')) {
-                        let _tmp = ["Количество превышений 5*ПДК"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                _tmp.push(__line[_indx]);
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('exceed10')) {
-                        let _tmp = ["Количество превышений 10*ПДК"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                _tmp.push(__line[_indx]);
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('sindex')) {
-                        let _tmp = ["Стандартный индекс"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-
-                                _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
-
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-                    if (__line[0].toString().includes('repeatably')) {
-                        let _tmp = ["Наибольшая повторяемость, %"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(2)).replace('.', ','));
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('sigma')) {
-                        let _tmp = ["Ср. квадр. отклонение"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-                    if (__line[0].toString().includes('classcss')) {
-                        let _tmp = ["ClassName"];
-
-                        template_chemical.forEach((_chemical, _indx) => {
-
-                            if (_indx > 4) {
-                                if (isEmpty(__line[_indx]))
-                                    _tmp.push('alert_success');
-
-                                if (Number(__line[_indx]) == 1)
-                                    _tmp.push('alert_macs1_ylw'); //outranged of a macs in 1 time
-                                if (Number(__line[_indx]) == 5)
-                                    _tmp.push('alert_macs5_orng'); //outranged of a macs in 5 times
-                                if (Number(__line[_indx]) == 10)
-                                    _tmp.push('alert_macs10_red');
-                            }
-                        })
-                        avrg_measure.push(_tmp);
-                    }
-
-
-                }
-
-            })
-
-            //pollution creation
-
-
-            var pollution = [];
-            var values = [];
-            var _data = [];
-            data_raw.forEach((element, ind) => {
-                pollution.push({
-                    time: element.time, valueNO: String(element.NO).replace('.', ','), valueNO2: String(element.NO2).replace('.', ','), valueNH3: String(element.NH3).replace('.', ','), valueSO2: String(element.SO2).replace('.', ','),
-                    valueH2S: String(element.H2S).replace('.', ','), valueO3: String(element.O3).replace('.', ','), valueCO: String(element.CO).replace('.', ','), valueCH2O: String(element.CH2O).replace('.', ','), valuePM1: String(element.PM1).replace('.', ','),
-                    valuePM25: String(element['PM2.5']).replace('.', ','), valuePM10: String(element.PM10).replace('.', ','), valueTSP: String(element['Пыль общая']).replace('.', ','),
-                    valueC6H6: String(element['бензол']).replace('.', ','), valueC7H8: String(element['толуол']).replace('.', ','), valueC8H10: String(element['этилбензол']).replace('.', ','),
-                    valueC8H10MP: String(element['м,п-ксилол']).replace('.', ','), valueC8H10O: String(element['о-ксилол']).replace('.', ','), valueC6H5Cl: String(element['хлорбензол']).replace('.', ','),
-                    valueC8H8: String(element['стирол']).replace('.', ','), valueC6H5OH: String(element['фенол']).replace('.', ','), valueTemp: String(element['temp']).replace('.', ','), valueDir: element['dir'], valueSpd: element['spd'], valueHum: element['hum']
-                });
-            })
-
-            avrg_measure.forEach((element, ind) => {
-                if ((ind > 0) && (ind < avrg_measure.length - 1)) {
-                    pollution.push({
-                        time: element[0], valueNO: element[1], valueNO2: element[2], valueNH3: element[3], valueSO2: element[4],
-                        valueH2S: element[5], valueO3: element[6], valueCO: element[7], valueCH2O: element[8], valuePM1: element[9],
-                        valuePM25: element[10], valuePM10: element[11], valueTSP: element[12],
-                        valueC6H6: element[13], valueC7H8: element[14], valueC8H10: element[15],
-                        valueC8H10MP: element[16], valueC8H10O: element[17], valueC6H5Cl: element[18],
-                        valueC8H8: element[19], valueC6H5OH: element[20]
-
-                    });
-                }
-            });
-
-            //console.log('time total =', Date.now() - start1);
-
-            //values.push(measure);
-            values.push({
-                year: date.format(new Date(data.period_from), 'YYYY'),
-                month: date.format(new Date(data.period_from), 'MM'), pollution: pollution
-            });
-            _data.push({ 'station': data.station_name, 'values': values });
-
-
-            let response = {};
-
-            response.data_raw = data_raw;
-            response.avrg_measure = avrg_measure;
-            response.data = _data;
-            //response.data = data;
-            resp.json({ response });
-        })
     /* loadData(data.station, between_date, station_name).then(result => {
  
          let result_parse0 = JSON.stringify(result[0]);
@@ -1486,6 +1116,384 @@ router.post('/get_monthly', authenticate, (req, resp) => {
 
 });
 
+function read_monthly(data, appDir) {
+    var __data = fs.readFileSync(appDir + '/monthly.csv', { encoding: 'utf8', flag: 'r' });
+
+    var data_raw = [], __str = [], avrg_measure = [];
+    const template_chemical = ['time', 'temp', 'dir', 'spd', 'hum', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол'];
+
+    avrg_measure.push(['Наименование', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая', 'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол']);
+
+    var _strings = __data.split('\n');
+    var _lines = [];
+    var _index = -1;
+    _strings.forEach((_str, _ind) => {
+        _lines.push(_str.split(';'));
+    })
+
+    _lines.forEach((__line, __ind) => {
+
+        if (__ind > 0) {
+
+            let _date = new Date(__line[0]);
+
+            if (!isNaN(_date.getTime())) {
+                data_raw.push({});
+                _index++;
+
+                template_chemical.forEach((_chemical, _indx) => {
+                    let _temp = data_raw[_index];
+                    if (_indx > 4) {
+                        if (String(_chemical) == 'CO') {
+                            _temp[_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ',');
+                        } else {
+                            _temp[_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ',');
+
+                        }
+
+                    } else {
+                        if (_indx > 0) {
+                            if (String(_chemical) == 'temp') {
+                                _temp[_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ',');
+
+                            } else {
+                                _temp[_chemical] = isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(0)).replace('.', ',');
+
+                            }
+                        } else {
+                            _temp[_chemical] = new Date(__line[_indx]).format('dd-MM-yyyy');
+
+                        }
+                    }
+
+                    data_raw[_index] = _temp;
+                })
+            }
+            if (__line[0].toString().includes('_empty')) {
+                template_chemical.forEach((_chemical, _indx) => {
+                    if (!isEmpty(__line[_indx])) {
+
+                        let _temp = data_raw[_index];
+                        _temp[_chemical + '_class'] = 'alert_success';
+                        data_raw[_index] = _temp;
+
+                        if (__line[_indx] == 'true') {
+                            let _temp = data_raw[_index];
+                            _temp[_chemical + '_class'] = 'alert_empty';
+                            data_raw[_index] = _temp;
+                        }
+
+                    }
+                })
+            }
+
+            if (__line[0].toString().includes('_outrange')) {
+                template_chemical.forEach((_chemical, _indx) => {
+                    if (!isEmpty(__line[_indx])) {
+                        //if (__line[_indx] == 'false')
+                        //  __str.push({ [_chemical + '_class']: 'alert_succes' });
+                        if (__line[_indx] == 'true') {
+                            let _temp = data_raw[_index];
+                            _temp[_chemical + '_class'] = 'alert_range';
+                            data_raw[_index] = _temp;
+                        }
+
+                    }
+                })
+            }
+
+            if (__line[0].toString().includes('_macs')) {
+                template_chemical.forEach((_chemical, _indx) => {
+                    if (!isEmpty(__line[_indx])) {
+                        if (__line[_indx] == '1') {
+                            let _temp = data_raw[_index];
+                            _temp[_chemical + '_class'] = 'alert_macs1_ylw';
+                            data_raw[_index] = _temp;
+                        }
+                        if (__line[_indx] == '5') {
+                            let _temp = data_raw[_index];
+                            _temp[_chemical + '_class'] = 'alert_macs5_orng';
+                            data_raw[_index] = _temp;
+                        }
+                        if (__line[_indx] == '10') {
+                            let _temp = data_raw[_index];
+                            _temp[_chemical + '_class'] = 'alert_macs10_red';
+                            data_raw[_index] = _temp;
+                        }
+
+                    }
+                })
+            }
+
+
+
+            if (__line[0].toString().includes('average')) {
+                let _tmp = ["Среднемесячное значение"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        if (String(_chemical) == 'CO') {
+                            _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
+                        } else {
+                            _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
+
+                        }
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('count')) {
+                let _tmp = ["Количество"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        _tmp.push(__line[_indx]);
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('max_measure')) {
+                let _tmp = ["Максимальное значение"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        if (String(_chemical) == 'CO') {
+                            _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
+                        } else {
+                            _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
+
+                        }
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('max_time')) {
+                let _tmp = ["Время максимального значения"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        _tmp.push(__line[_indx]);
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('min_measure')) {
+                let _tmp = ["Минимальное значение"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        if (String(_chemical) == 'CO') {
+                            _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
+                        } else {
+                            _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
+
+                        }
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('min_time')) {
+                let _tmp = ["Время минимального значения"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        _tmp.push(__line[_indx]);
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('max_concentration_measure')) {
+                let _tmp = ["Макс. разовая концентрация"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        if (String(_chemical) == 'CO') {
+                            _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
+                        } else {
+                            _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
+
+                        }
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('time_max_concentration')) {
+                let _tmp = ["Время наблюдения макс. р. концентрации"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        _tmp.push(__line[_indx]);
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('exceed_1')) {
+                let _tmp = ["Количество превышений ПДК"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        _tmp.push(__line[_indx]);
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('exceed5')) {
+                let _tmp = ["Количество превышений 5*ПДК"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        _tmp.push(__line[_indx]);
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('exceed10')) {
+                let _tmp = ["Количество превышений 10*ПДК"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        _tmp.push(__line[_indx]);
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('sindex')) {
+                let _tmp = ["Стандартный индекс"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+
+                        _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(1)).replace('.', ','));
+
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+            if (__line[0].toString().includes('repeatably')) {
+                let _tmp = ["Наибольшая повторяемость, %"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(2)).replace('.', ','));
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('sigma')) {
+                let _tmp = ["Ср. квадр. отклонение"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        _tmp.push(isNaN(Number(__line[_indx])) ? "-" : String(Number(__line[_indx]).toFixed(3)).replace('.', ','));
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+            if (__line[0].toString().includes('classcss')) {
+                let _tmp = ["ClassName"];
+
+                template_chemical.forEach((_chemical, _indx) => {
+
+                    if (_indx > 4) {
+                        if (isEmpty(__line[_indx]))
+                            _tmp.push('alert_success');
+
+                        if (Number(__line[_indx]) == 1)
+                            _tmp.push('alert_macs1_ylw'); //outranged of a macs in 1 time
+                        if (Number(__line[_indx]) == 5)
+                            _tmp.push('alert_macs5_orng'); //outranged of a macs in 5 times
+                        if (Number(__line[_indx]) == 10)
+                            _tmp.push('alert_macs10_red');
+                    }
+                })
+                avrg_measure.push(_tmp);
+            }
+
+
+        }
+
+    })
+
+    //pollution creation
+
+
+    var pollution = [];
+    var values = [];
+    var _data = [];
+    data_raw.forEach((element, ind) => {
+        pollution.push({
+            time: element.time, valueNO: String(element.NO).replace('.', ','), valueNO2: String(element.NO2).replace('.', ','), valueNH3: String(element.NH3).replace('.', ','), valueSO2: String(element.SO2).replace('.', ','),
+            valueH2S: String(element.H2S).replace('.', ','), valueO3: String(element.O3).replace('.', ','), valueCO: String(element.CO).replace('.', ','), valueCH2O: String(element.CH2O).replace('.', ','), valuePM1: String(element.PM1).replace('.', ','),
+            valuePM25: String(element['PM2.5']).replace('.', ','), valuePM10: String(element.PM10).replace('.', ','), valueTSP: String(element['Пыль общая']).replace('.', ','),
+            valueC6H6: String(element['бензол']).replace('.', ','), valueC7H8: String(element['толуол']).replace('.', ','), valueC8H10: String(element['этилбензол']).replace('.', ','),
+            valueC8H10MP: String(element['м,п-ксилол']).replace('.', ','), valueC8H10O: String(element['о-ксилол']).replace('.', ','), valueC6H5Cl: String(element['хлорбензол']).replace('.', ','),
+            valueC8H8: String(element['стирол']).replace('.', ','), valueC6H5OH: String(element['фенол']).replace('.', ','), valueTemp: String(element['temp']).replace('.', ','), valueDir: element['dir'], valueSpd: element['spd'], valueHum: element['hum']
+        });
+    })
+
+    avrg_measure.forEach((element, ind) => {
+        if ((ind > 0) && (ind < avrg_measure.length - 1)) {
+            pollution.push({
+                time: element[0], valueNO: element[1], valueNO2: element[2], valueNH3: element[3], valueSO2: element[4],
+                valueH2S: element[5], valueO3: element[6], valueCO: element[7], valueCH2O: element[8], valuePM1: element[9],
+                valuePM25: element[10], valuePM10: element[11], valueTSP: element[12],
+                valueC6H6: element[13], valueC7H8: element[14], valueC8H10: element[15],
+                valueC8H10MP: element[16], valueC8H10O: element[17], valueC6H5Cl: element[18],
+                valueC8H8: element[19], valueC6H5OH: element[20]
+
+            });
+        }
+    });
+
+    //console.log('time total =', Date.now() - start1);
+
+    //values.push(measure);
+    values.push({
+        year: date.format(new Date(data.period_from), 'YYYY'),
+        month: date.format(new Date(data.period_from), 'MM'), pollution: pollution
+    });
+    _data.push({ 'station': data.station_name, 'values': values });
+    let response = {};
+
+    response.data_raw = data_raw;
+    response.avrg_measure = avrg_measure;
+    response.data = _data;
+    //console.log('END =', data_raw.length);
+
+    return response;
+
+
+    //response.data = data;
+
+}
+
 router.get('/get_tza4', authenticate, (req, resp) => {
     //  
 
@@ -1925,9 +1933,9 @@ router.get('/get_tza4_auto', authenticate, (req, resp) => {
     const between_date = [data.period_from, data.period_to];
     let _period_from = new Date(data.period_from).format('Y-MM-ddTHH:mm:SS');
     let _period_to = new Date(data.period_to).format('Y-MM-ddTHH:mm:SS');
-    
+
     var appDir = path.dirname(require.main.filename);
-    
+
     const api_mo = spawnSync(appDir + '/tza', [data.station, _period_from, _period_to, appDir]);
 
     //console.log(`stdout: ${api_mo.stdout}`);
