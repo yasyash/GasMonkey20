@@ -154,9 +154,11 @@ class MapsForm extends React.Component {
 
     componentDidMount() {
 
-     
+
         const { stationsList } = this.props;
         let params = {};
+        let _layers = [];
+
         this.props.queryEvent(params).then(data => {
             let lat, lng = 0;
             let params = {};
@@ -169,8 +171,21 @@ class MapsForm extends React.Component {
                 lat = data[0].latitude;
                 lng = data[0].longitude;
             }
-            var lmap = L.map('mapBox', { center: [lat, lng], zoom: 10 });
-            L.tileLayer("./tiles/{z}/{x}/{y}.png", {}).addTo(lmap);
+
+            _layers.push(L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {}));
+            _layers.push(L.tileLayer("./tiles/{z}/{x}/{y}.png", {}));
+
+            var lmap = L.map('mapBox', { center: [lat, lng], zoom: 10, layers: _layers });
+            this.setState({ _map: lmap });
+            var baseLayers = {
+                'Карта из Интернет': _layers[0],
+                'Локальная карта': _layers[1]
+            };
+            var control = L.control.layers(baseLayers)
+
+            control.addTo(lmap);
+            //lmap.on('contextmenu', this.onMapClick.bind(this));
+
             //var greenIcon = new LeafIcon({iconUrl: 'leaf-green.png'});
             data.map(item => {
                 params.station = item.id;
@@ -203,16 +218,16 @@ class MapsForm extends React.Component {
                                 range_macs = quotient / element.max_m;
                                 class_css = 'alert_success';
 
-                                if (range_macs > 1){
+                                if (range_macs > 1) {
                                     class_css = 'alert_macs1_ylw'; //outranged of a macs in 1 time
                                     _alert = true;
                                 }
-                                if (range_macs >= 5){
+                                if (range_macs >= 5) {
                                     class_css = 'alert_macs5_orng'; //outranged of a macs in 5 times
                                     _alert = true;
 
                                 }
-                                if (range_macs >= 10){
+                                if (range_macs >= 10) {
                                     class_css = 'alert_macs10_red'; //outranged of a macs in  more than 10 times
                                     _alert = true;
                                 }
@@ -223,7 +238,7 @@ class MapsForm extends React.Component {
                                     'time': new Date(filter[filter.length - 1].date_time).format('H:mm:SS'), 'value': quotient.toFixed(3), 'className': class_css
                                 })
 
-                                var prcnt = range_macs ;
+                                var prcnt = range_macs;
 
                                 if (class_css != 'alert_success') {
                                     popupContent += '<div style = "background-color: #ff8080">' + element.chemical + " : " + quotient.toFixed(3) + " (" + prcnt.toFixed(3) + " долей ПДК)" + '</div>';
@@ -311,7 +326,7 @@ class MapsForm extends React.Component {
 
 
                         };
-                            marker.bindPopup(popupContent, { autoClose: false });
+                        marker.bindPopup(popupContent, { autoClose: false });
 
 
                     }
@@ -331,7 +346,7 @@ class MapsForm extends React.Component {
         const { sensorsList } = this.props;
         const { tab_no } = this.state;
 
-        
+
 
         return (
 
@@ -346,7 +361,7 @@ class MapsForm extends React.Component {
                         </div>
 
                     </Tab>
- 
+
                 </Tabs>
 
             </Paper >
