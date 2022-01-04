@@ -14,12 +14,10 @@ export default {
         new webpack.NoEmitOnErrorsPlugin(),
         new webpack.optimize.OccurrenceOrderPlugin(),
         new webpack.HotModuleReplacementPlugin(),
-
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery"
         })
-
     ],
     module: {
 
@@ -47,7 +45,7 @@ export default {
                 { loader: 'css-loader' }
             ]
         }, {
-            test: /\.(png|jpe?g|svg|gif)$/,
+            test: /\.(png|jpe?g|svg|gif|ico)$/,
             use: [{
                 loader: 'file-loader',
                 options: {

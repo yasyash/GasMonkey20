@@ -1,5 +1,21 @@
-//******************************************
-//
+/*
+ * Copyright © 2018-2022 Yaroslav Shkliar <mail@ilit.ru>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Research Laboratory of IT
+ * www.ilit.ru on e-mail: mail@ilit.ru
+ * Also you сould open support domain www.cleenair.ru or write to e-mail: mail@cleenair.ru
+ */
 
 import React from 'react';
 import { withRouter } from 'react-router';
@@ -43,6 +59,7 @@ import { isNull } from 'util';
 
 import { reportGen, reportXGen } from './actions/genReportActions';
 
+import FileImportDialog from './stuff/FileImportDialog';
 
 Object.assign(ReactTableDefaults, {
     previousText: 'Предыдущие',
@@ -74,6 +91,16 @@ const styles = theme => ({
     },
 });
 
+function wrapData(data_in) {
+    const data = data_in.map(item => {
+        const _id = shortid.generate();
+
+
+        Object.assign(item, { _id: _id });
+        return item;
+    });
+    return data;
+}
 
 class TableData extends React.Component {
     constructor(props) {
@@ -133,7 +160,9 @@ class TableData extends React.Component {
             selectAll: false,
             hideFiltartion: false,
             isEdit: false,
-            isData: true
+            isData: true,
+            openDialog: false,
+            isImported: false
         };
 
 
@@ -150,6 +179,7 @@ class TableData extends React.Component {
                 this.setState({ snack_msg: 'Данные успешно сохранены...' });
                 this.setState({ isEdit: false });
                 this.setState({ isForceToggle: true });
+                this.setState({ isImported: false });
 
                 this.handleToggleEdit({ target: { name: 'isEdit' } }, false, true); //generation syntetic event
                 // this.setState({ isForceToggle: false });
@@ -460,9 +490,79 @@ class TableData extends React.Component {
         //   this.props.createMyEvent(this.state);
     };
 
-    //onChange(e) {
-    //  this.setState({ [e.target.name]: e.target.value });
-    //}
+
+    handleDialogAdd() {
+        this.setState({ openDialog: true });
+
+    }
+
+    handleDialogClose() {
+        this.setState({ openDialog: false });
+    };
+
+    handleDialogChange = name => event => {
+        //getFTPFunc
+        this.setState({
+            [name]: event.target.value,
+        });
+    };
+
+    handleImport(fileBlob, component, begin, quant, delim) {
+        const reader = new FileReader();
+        const self = this;
+        if (fileBlob) {
+            reader.onload = (e) => {
+                var lines = e.target.result.split('\n');
+                if (self) {
+                    const sensors = self.props.activeSensorsList;
+
+                    var sensor = sensors.filter((item, i, arr) => {
+                        return item.typemeasure == component;
+                    });
+
+                    const idd = self.props.station_actual[0];
+
+                    var dataList = [];
+                    var _props = self.props.title;
+                    var title = [];
+
+                    for (var line = Number(begin) - 1; line < ((Number(quant) + Number(begin) - 1 > lines.length) ? lines.length : Number(quant) + Number(begin) - 1); line++) {
+                        // By delimiter
+                        var tabs = lines[line].split(delim);
+                        var time = tabs[0];
+                        var measure = tabs[1];
+                        dataList.push({ idd: idd, typemeasure: component, serialnum: sensor[0].serialnum, date_time: time, unit_name: sensor[0].unit_name, measure: measure.replace(',', '.') });
+                    }
+                    if (!isNaN(Number(dataList[0].measure))) {
+                        const wrapedDataList = wrapData(dataList);
+                        self.setState({ dataList: wrapedDataList });
+
+                        deleteDataList();
+                        addDataList(wrapedDataList);
+
+                        _props.map(item => {
+                            if (item.Cell === null) item.Cell = self.renderEditable;
+                            title.push(item);
+
+                        });
+                        // self.setState({ isForceToggle: false });
+                        self.setState({
+                            isEdit: true
+                        });
+                        self.setState({ title: title });
+                        self.setState({ isImported: true });
+                    } else {
+                        alert("Выберите строки содержащие значения.");
+                    }
+                }
+            };
+            reader.readAsText(fileBlob);
+        } else {
+            
+            alert("Файл не выбран!");
+        }
+    };
+
     componentDidUpdate() {
         //        var _props;
         //var title = [];
@@ -540,6 +640,13 @@ class TableData extends React.Component {
 
 
             <div>
+                <FileImportDialog openDialog={this.state.openDialog}
+                    handleDialogClose={this.handleDialogClose.bind(this)}
+                    handleChange={this.handleDialogChange.bind(this)}
+                    handleImport={this.handleImport.bind(this)}
+                    activeSensorsList={this.props.activeSensorsList}
+
+                />
                 <br />
                 <MenuTable {...this.state}
                     handleToggleEdit={this.handleToggleEdit.bind(this)}
@@ -549,6 +656,8 @@ class TableData extends React.Component {
                     handleClose={this.handleClose.bind(this)}
                     handleUpdateData={this.handleUpdateData.bind(this)}
                     reportXGen={this.props.reportXGen.bind(this)}
+                    handleDialogAdd={this.handleDialogAdd.bind(this)}
+
                     height={this.state.height}
                     auth={auth}
                     dataList={this.props.dataList}
@@ -722,9 +831,8 @@ function mapStateToProps(state, ownProps) {
         sensorsList: state.sensorsList,
         title: title,
         dateTimeBegin: state.datePickers.dateTimeBegin,
-        dateTimeEnd: state.datePickers.dateTimeEnd
-
-
+        dateTimeEnd: state.datePickers.dateTimeEnd,
+        activeSensorsList: state.activeSensorsList
 
     };
 }

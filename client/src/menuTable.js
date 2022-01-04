@@ -1,3 +1,21 @@
+/*
+ * Copyright © 2018-2022 Yaroslav Shkliar <mail@ilit.ru>
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3.0 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Research Laboratory of IT
+ * www.ilit.ru on e-mail: mail@ilit.ru
+ * Also you сould open support domain www.cleenair.ru or write to e-mail: mail@cleenair.ru
+ */
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import IconMenu from 'material-ui/IconMenu';
@@ -20,6 +38,7 @@ import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
 import Icon from '@material-ui/core/Icon';
 
+import Export from './icons/import-csv.png'
 import SaveIcon from './icons/save-icon';
 import BallotIcon from './icons/ballot-recount';
 import RenewIcon from './icons/renew-icon';
@@ -177,7 +196,8 @@ class MenuTable extends Component {
             averaging: 1,
             isData,
             isTableStation,
-            selectAll
+            selectAll,
+            sensorsList: []
 
         };
 
@@ -258,6 +278,9 @@ class MenuTable extends Component {
 
     };
 
+    handleImport = (name) => {
+        this.props.handleDialogAdd();
+    };
 
     handleUpdateSQLClick() {
         this.props.handleUpdateData();
@@ -405,10 +428,33 @@ class MenuTable extends Component {
                         </IconButton>
 
                     </Tooltip>}
+
+
+                    {(this.state.isData) && <Tooltip id="tooltip-charts-view5" title="Импорт данных">
+                        <IconButton className={classes.button} onClick={this.handleImport} aria-label="Импорт данных">
+                            <SvgIcon className={classes.icon}>
+                                <path d="M16.5,6V17.5A4,4 0 0,1 12.5,21.5A4,4 0 0,1 8.5,17.5V5A2.5,2.5 0 0,1 11,2.5A2.5,2.5 
+                                0 0,1 13.5,5V15.5A1,1 0 0,1 12.5,16.5A1,1 0 0,1 11.5,15.5V6H10V15.5A2.5,2.5 0 0,0 12.5,18A2.5,
+                                2.5 0 0,0 15,15.5V5A4,4 0 0,0 11,1A4,4 0 0,0 7,5V17.5A5.5,5.5 0 0,0 12.5,23A5.5,5.5 0 0,0 18,17.5V6H16.5Z" />
+                            </SvgIcon>
+                        </IconButton>
+                    </Tooltip>}
                     {(this.state.isEdit) && (!this.props.isForceToggle) &&
                         <IconButton className={classes.button} tooltip={'Записать'} aria-label="Записать">
                             <Icon className={classes.icon} color="primary" onClick={this.handleUpdateSQLClick}>
                                 < SaveIcon />
+                            </Icon>
+                        </IconButton>
+                    }
+                    {(this.props.isImported) &&
+                        <IconButton className={classes.button} tooltip={'Записать'} aria-label="Записать">
+                            <Icon className={classes.icon} color="secondary" onClick={this.handleUpdateSQLClick}>
+                                <SvgIcon className={classes.icon}>
+                                    <path d="M4 7C4 4.79 7.58 3 12 3S20 4.79 20 7 16.42 11 12 11 4 9.21 4 7M19.72 13.05C19.9 12.71 20 12.36 20 12V9C20
+                                     11.21 16.42 13 12 13S4 11.21 4 9V12C4 14.21 7.58 16 12 16C12.65 16 13.28 15.96 13.88 15.89C14.93 14.16 16.83 13 19 
+                                     13C19.24 13 19.5 13 19.72 13.05M13.1 17.96C12.74 18 12.37 18 12 18C7.58 18 4 16.21 4 14V17C4 19.21 7.58 21 12 21C12.46 
+                                     21 12.9 21 13.33 20.94C13.12 20.33 13 19.68 13 19C13 18.64 13.04 18.3 13.1 17.96M18 18V16L15 19L18 22V20H22V18H18Z" />
+                                </SvgIcon>
                             </Icon>
                         </IconButton>
                     }
@@ -477,7 +523,7 @@ class MenuTable extends Component {
                         value={this.state.valueSingle}>
 
                         <div className="form-control " style={styles.menuContainer}>
-                            {(username == 'admin') && (typeof (this.props.handleToggleEdit) === 'function') && <Toggle
+                            {(!this.props.isImported) &&(username == 'admin') && (typeof (this.props.handleToggleEdit) === 'function') && <Toggle
                                 name="isEdit"
                                 label="Редактировать данные"
                                 onToggle={this.handleEdit}
@@ -543,7 +589,7 @@ function mapStateToProps(state) {
           height: state.height*/
 
         //isEdit: state.isEdit
-
+        sensorsList: state.sensorsList
     };
 }
 
@@ -553,4 +599,4 @@ MenuTable.propTypes = {
     handleClick: PropTypes.func.isRequired
 }
 
-export default connect(null, { dateAddAction })(withStyles(styles)(MenuTable));
+export default connect(mapStateToProps, { dateAddAction })(withStyles(styles)(MenuTable));
