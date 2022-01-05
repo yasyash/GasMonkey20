@@ -40,6 +40,8 @@ import ftp_upload from './ftp_actions';
 import cron_email from './emailer';
 import cors from 'cors';
 
+import favicon from 'serve-favicon';
+
 const app = express();
 app.use(cors());
 //var staticPath = path.join(__dirname, '/');
@@ -69,6 +71,7 @@ app.use(webpackMiddleware(compiler, {
     noInfo: true
 }));
 app.use(webpackHotMiddleware(compiler));
+app.use(favicon('./client/public/favicon.png'));
 
 
 app.get('/*', (req, resp) => {
