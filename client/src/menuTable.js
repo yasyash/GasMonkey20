@@ -38,7 +38,6 @@ import TextField from '@material-ui/core/TextField';
 import Divider from '@material-ui/core/Divider';
 import Icon from '@material-ui/core/Icon';
 
-import Export from './icons/import-csv.png'
 import SaveIcon from './icons/save-icon';
 import BallotIcon from './icons/ballot-recount';
 import RenewIcon from './icons/renew-icon';
