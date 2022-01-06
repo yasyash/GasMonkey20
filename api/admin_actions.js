@@ -783,7 +783,7 @@ router.get('/dev_get', authenticate, (req, resp) => {
     Promise.join(Stations.query({
         where: ({ is_present: true })
     }).fetchAll().catch(err => resp.status(500).json({ error: err })),
-        DEV.where({ is_present: true }).fetchAll().catch(err => resp.status(500).json({ error: err })),
+        DEV.where({ is_present: true }).orderBy('idd', 'ASC').fetchAll().catch(err => resp.status(500).json({ error: err })),
         Macs.query('where', 'max_m', '>', 0).orderBy('chemical', 'ASC').fetchAll()
             .catch(err => resp.status(500).json({ error: err })),
         ((stations_list, dev_list, macs_list) => {
@@ -902,6 +902,7 @@ router.post('/dev_insert', authenticate, (req, resp) => {
             let average_period = 60;
             let measure_class = 'data';
             if (data.is_meteo == 'true') measure_class = data.meteo_field;
+            if (data.is_manual == 'true') measure_class = 'manual';
 
             let is_wind_sensor = false;
             let date_time_in = new Date().format('Y-MM-dd HH:mm:SS');

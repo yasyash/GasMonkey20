@@ -546,6 +546,7 @@ class EquipmentForm extends React.Component {
 
 
         }
+
         if (name == 'def_colour') {
             if (event.rgb) {
                 this.setState({
@@ -566,8 +567,8 @@ class EquipmentForm extends React.Component {
     handleAdd() {
         //insert action
         let { idd, typemeasure, serialnum, unit_name, max_consentration,
-            max_day_consentration, def_colour, is_meteo, meteo_field } = this.state;
-        this.props.insertDev({ idd, typemeasure, serialnum, unit_name, max_consentration, max_day_consentration, def_colour, is_meteo, meteo_field })
+            max_day_consentration, def_colour, is_meteo, meteo_field, is_manual } = this.state;
+        this.props.insertDev({ idd, typemeasure, serialnum, unit_name, max_consentration, max_day_consentration, def_colour, is_meteo, meteo_field, is_manual })
             .then(resp => {
                 this.setState({ openDialog: false });
 

@@ -159,6 +159,12 @@ export default class DeviceDialog extends React.Component {
                                 color="primary"
                                 value='true'
                             />
+                             Ручной отбор:
+                        <Checkbox
+                                onChange={this.props.handleChange('is_manual')}
+                                color="primary"
+                                value='true'
+                            />
                         </DialogContentText>
 
                         <FormControl >
@@ -244,7 +250,7 @@ export default class DeviceDialog extends React.Component {
                             </div>
                             {this.state.displayColorPicker ? <div style={styleP.popover}>
                                 <div style={styleP.cover} onClick={this.handleClose} />
-                                <ChromePicker color={{r: (Math.floor(this.props.def_colour/65536)), g:(Math.floor(this.props.def_colour/256)%256),b:(this.props.def_colour % 256)}} onChange={this.props.handleChange('def_colour')} />
+                                <ChromePicker color={{ r: (Math.floor(this.props.def_colour / 65536)), g: (Math.floor(this.props.def_colour / 256) % 256), b: (this.props.def_colour % 256) }} onChange={this.props.handleChange('def_colour')} />
                             </div> : null}
 
                         </div>
