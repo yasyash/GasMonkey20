@@ -522,3 +522,14 @@ export function updateData(paramstr) {
             .then(resp => { return (!resp.data.errcount ? true : false) });
     };
 };
+
+//delete data in DB
+
+export function deleteData(paramstr) {
+
+
+    return dispatch => {
+        return Axios.post('/api/admin/data_delete', paramstr)
+            .then(resp => { return (!resp.data.errcount ? true : false) });
+    };
+};

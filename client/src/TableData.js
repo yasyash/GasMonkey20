@@ -27,8 +27,8 @@ import format from 'node.date-time';
 import TxtFieldGroup from './stuff/txtField';
 import { queryEvent } from './actions/queryActions';
 import { addDataList, deleteDataList } from './actions/dataAddActions';
-import { updateData } from './actions/adminActions';
-import { query4EditEvent } from './actions/queryActions';
+import { updateData, deleteData } from './actions/adminActions';
+import { query4EditEvent, queryManyEvent } from './actions/queryActions';
 
 import MenuTable from './menuTable';
 import { Tabs, Tab } from 'material-ui/Tabs';
@@ -162,7 +162,8 @@ class TableData extends React.Component {
             isEdit: false,
             isData: true,
             openDialog: false,
-            isImported: false
+            isImported: false,
+            isDeleted: false
         };
 
 
@@ -174,18 +175,86 @@ class TableData extends React.Component {
 
     handleUpdateData() {
         if (!isEmpty(this.state.dataList))
-            if (this.props.updateData(this.state.dataList)) {
-                this.setState({ isLoading: true });
-                this.setState({ snack_msg: 'Данные успешно сохранены...' });
-                this.setState({ isEdit: false });
-                this.setState({ isForceToggle: true });
-                this.setState({ isImported: false });
+            if (!this.state.isDeleted) {
+                if (this.props.updateData(this.state.dataList)) {
+                    this.setState({ isLoading: true });
+                    this.setState({ snack_msg: 'Данные успешно сохранены...' });
+                    this.setState({ isEdit: false });
+                    this.setState({ isForceToggle: true });
+                    this.setState({ isImported: false });
+                    this.setState({ isDeleted: false });
 
-                this.handleToggleEdit({ target: { name: 'isEdit' } }, false, true); //generation syntetic event
-                // this.setState({ isForceToggle: false });
+                    this.handleToggleEdit({ target: { name: 'isEdit' } }, false, true); //generation syntetic event
+                    // this.setState({ isForceToggle: false });
 
-            };
+                }
+            } else {
+                if (this.state.selection.length) {
+                    if (confirm('Выбранные записи будут удалены навсегда! Вы уверены?')) {
+                        var list = [];
+                        const { selection, dataList } = this.state;
+                        selection.forEach((item) => {
+                            var element = dataList.filter((_item, i, arr) => {
+                                return _item._id == item;
+                            });
+                            if (element.length > 0)
+                                list.push({ date_time: element[0].date_time, serialnum: element[0].serialnum });
+                        })
+
+                        if (this.props.deleteData(list)) {
+                            this.setState({ isLoading: true });
+                            this.setState({ snack_msg: 'Данные успешно удалены...' });
+                            this.setState({ isEdit: false });
+                            this.setState({ isForceToggle: true });
+                            this.setState({ isImported: false });
+                            this.setState({ isDeleted: false });
+
+                            this.handleToggleEdit({ target: { name: 'isEdit' } }, false, true); //generation syntetic event
+                            // this.setState({ isForceToggle: false });
+                            this.handleSynteticUpdate();    
+                        }
+                    }
+                } else {
+                    this.setState({ isLoading: true });
+                    this.setState({ isEdit: false });
+                    this.setState({ isForceToggle: true });
+                    this.setState({ isImported: false });
+                    this.setState({ isDeleted: false });
+
+                    this.handleToggleEdit({ target: { name: 'isEdit' } }, false, true); //generation syntetic event
+                }
+            }
     }
+
+    handleSynteticUpdate() {
+        let params = {};
+        
+        // 0 - all stations, 1- all sensors of the station, 2 - selected sensors
+        if (!isEmpty(this.props.sensors_actual)) {
+            params.period_from = this.props.dateTimeBegin;
+            params.period_to = this.props.dateTimeEnd;
+
+
+            params.station = this.props.station_actual;
+            params.sensors = [this.props.sensors_actual[0].serialnum];
+            params.averaging = 1;
+
+            this.props.queryManyEvent(params).then(data => {
+                if (data.length > 0) {
+                    this.setState({ dataList: data })
+                    this.setState({ isLoading: true })
+                    this.setState({ snack_msg: 'Данные успешно обновлены...' })
+
+                }
+                else {
+                    this.setState({ isLoading: true })
+                    this.setState({ snack_msg: 'Данные не обновлены...' })
+
+                }
+            });
+        }
+
+    };
 
     handleForceToggle() {
         this.setState({ isForceToggle: false });
@@ -284,7 +353,7 @@ class TableData extends React.Component {
     }
 
     toggleSelection(key, shift, row) {
-        /*
+        /*TableData-comp
           Implementation of how to manage the selection state is up to the developer.
           This implementation uses an array stored in the component state.
           Other implementations could use object keys, a Javascript Set, or Redux... etc.
@@ -378,6 +447,7 @@ class TableData extends React.Component {
                         this.setState({ dataList: data })
                         this.setState({ isLoading: true })
                         this.setState({ snack_msg: 'Данные измерений для редактирования успешно загружены...' })
+                        this.setState({ selection: [] })
                         //addActiveSensorsList(this.state.selection);
                         //getFirstActiveStationsList();
                         //addActiveStationsList({ sensors: this.state.selection });
@@ -402,6 +472,9 @@ class TableData extends React.Component {
                     });
 
                     this.setState({ title: title });
+                    this.setState({
+                        isDeleted: false
+                    });
                 });
 
 
@@ -423,10 +496,15 @@ class TableData extends React.Component {
                 });
                 this.setState({ dataList: [] });
                 this.setState({ title: title });
+                this.setState({
+                    isDeleted: false
+                });
+                this.setState({ selection: [] })
 
             } else {
                 if (confirm('Все несохраненные данные будут потеряны! Вы уверены?')) {
                     // Save it!
+
                     this.setState({
                         [event.target.name]: toggled
                     });
@@ -439,6 +517,10 @@ class TableData extends React.Component {
                     });
                     this.setState({ dataList: [] });
                     this.setState({ title: title });
+                    this.setState({
+                        isDeleted: false
+                    });
+                    this.setState({ selection: [] })
 
                 } else { return true; }
             }
@@ -472,6 +554,12 @@ class TableData extends React.Component {
         });
     };
 
+    handleDeleteSet = event => {
+        //getFTPFunc
+        this.setState({
+            isDeleted: !this.state.isDeleted
+        });
+    };
 
 
     onSubmit(e) {
@@ -510,56 +598,62 @@ class TableData extends React.Component {
     handleImport(fileBlob, component, begin, quant, delim) {
         const reader = new FileReader();
         const self = this;
-        if (fileBlob) {
-            reader.onload = (e) => {
-                var lines = e.target.result.split('\n');
-                if (self) {
-                    const sensors = self.props.activeSensorsList;
-
-                    var sensor = sensors.filter((item, i, arr) => {
-                        return item.typemeasure == component;
-                    });
-
-                    const idd = self.props.station_actual[0];
-
-                    var dataList = [];
-                    var _props = self.props.title;
-                    var title = [];
-
-                    for (var line = Number(begin) - 1; line < ((Number(quant) + Number(begin) - 1 > lines.length) ? lines.length : Number(quant) + Number(begin) - 1); line++) {
-                        // By delimiter
-                        var tabs = lines[line].split(delim);
-                        var time = tabs[0];
-                        var measure = tabs[1];
-                        dataList.push({ idd: idd, typemeasure: component, serialnum: sensor[0].serialnum, date_time: time, unit_name: sensor[0].unit_name, measure: measure.replace(',', '.') });
-                    }
-                    if (!isNaN(Number(dataList[0].measure))) {
-                        const wrapedDataList = wrapData(dataList);
-                        self.setState({ dataList: wrapedDataList });
-
-                        deleteDataList();
-                        addDataList(wrapedDataList);
-
-                        _props.map(item => {
-                            if (item.Cell === null) item.Cell = self.renderEditable;
-                            title.push(item);
-
-                        });
-                        // self.setState({ isForceToggle: false });
-                        self.setState({
-                            isEdit: true
-                        });
-                        self.setState({ title: title });
-                        self.setState({ isImported: true });
-                    } else {
-                        alert("Выберите строки содержащие значения.");
-                    }
-                }
-            };
-            reader.readAsText(fileBlob);
+        if (isEmpty(component)) {
+            alert('Наименование сенсора не выбрано.');
         } else {
-            
-            alert("Файл не выбран!");
+            if (fileBlob) {
+                reader.onload = (e) => {
+                    var lines = e.target.result.split('\n');
+                    if (self) {
+                        const sensors = self.props.activeSensorsList;
+
+                        var sensor = sensors.filter((item, i, arr) => {
+                            return item.typemeasure == component;
+                        });
+
+                        const idd = self.props.station_actual[0];
+
+                        var dataList = [];
+                        var _props = self.props.title;
+                        var title = [];
+
+                        for (var line = Number(begin) - 1; line < ((Number(quant) + Number(begin) - 1 > lines.length) ? lines.length : Number(quant) + Number(begin) - 1); line++) {
+                            // By delimiter
+                            var tabs = lines[line].split(delim);
+                            var time = tabs[0];
+                            var measure = tabs[1];
+                            dataList.push({ idd: idd, typemeasure: component, serialnum: sensor[0].serialnum, date_time: time, unit_name: sensor[0].unit_name, measure: measure.replace(',', '.') });
+                        }
+                        if (!isNaN(Number(dataList[0].measure))) {
+                            const wrapedDataList = wrapData(dataList);
+                            self.setState({ dataList: wrapedDataList });
+
+                            deleteDataList();
+                            addDataList(wrapedDataList);
+
+                            _props.map(item => {
+                                if (item.Cell === null) item.Cell = self.renderEditable;
+                                title.push(item);
+
+                            });
+                            // self.setState({ isForceToggle: false });
+                            self.setState({
+                                isEdit: true
+                            });
+                            self.setState({ title: title });
+                            self.setState({ isImported: true });
+                            self.setState({ selection: [] })
+
+                        } else {
+                            alert("Выберите строки содержащие значения.");
+                        }
+                    }
+                };
+                reader.readAsText(fileBlob);
+            } else {
+
+                alert("Файл не выбран!");
+            }
         }
     };
 
@@ -657,6 +751,7 @@ class TableData extends React.Component {
                     handleUpdateData={this.handleUpdateData.bind(this)}
                     reportXGen={this.props.reportXGen.bind(this)}
                     handleDialogAdd={this.handleDialogAdd.bind(this)}
+                    handleDeleteSet={this.handleDeleteSet.bind(this)}
 
                     height={this.state.height}
                     auth={auth}
@@ -846,4 +941,4 @@ TableData.contextType = {
     router: PropTypes.object.isRequired
 }
 
-export default connect(mapStateToProps, { queryEvent, addDataList, deleteDataList, updateData, reportXGen, query4EditEvent })(withRouter(withStyles(styles)(TableData)));
+export default connect(mapStateToProps, { queryEvent, queryManyEvent, addDataList, deleteDataList, updateData, deleteData, reportXGen, query4EditEvent })(withRouter(withStyles(styles)(TableData)));

@@ -41,6 +41,7 @@ import Stations from '../models/stations'
 import Macs from '../models/macs';
 import DATA from '../models/data';
 import { isString, isNumber } from 'util';
+import { stat } from 'fs';
 
 let router = express.Router();
 
@@ -818,21 +819,21 @@ router.post('/dev_update', authenticate, (req, resp) => {
         _ldc = 1000;
     if (isNaN(_lmc) || (_lmc == 0))
         _lmc = 1000;
-    if (isEmpty(toString(data.min_range))||isNaN(data.min_range))
+    if (isEmpty(toString(data.min_range)) || isNaN(data.min_range))
         _min_r = null;
-    if (isEmpty(toString(data.min_range))||isNaN(data.max_range))
+    if (isEmpty(toString(data.min_range)) || isNaN(data.max_range))
         _max_r = null;
 
     //console.log("min  ",(isNumber(data.min_range)), _min_r);
     //console.log("max  ", (isNumber(data.max_range)), _max_r);
     //console.log(
-     //   data.typemeasure,
-     //   data.serialnum,
-     //   data.idd,
-     //   data.unit_name,
-     //   data.def_colour)
+    //   data.typemeasure,
+    //   data.serialnum,
+    //   data.idd,
+    //   data.unit_name,
+    //   data.def_colour)
 
-       
+
     DEV.where({ id: data.id })
         .save({
             //updateperiod: data.updateperiod,
@@ -848,7 +849,7 @@ router.post('/dev_update', authenticate, (req, resp) => {
             // is_admin: data.is_admin,
         }, { patch: true }).then(Macs.where({ chemical: data.typemeasure })
             .save({ max_d: _ldc, max_m: _lmc }, { patch: true }))
-        .catch(err =>{ console.log('err ', err)})
+        .catch(err => { console.log('err ', err) })
         .then(result => {
             resp.json({ result });
         }).catch(err => resp.status(500).json({ error: err }));
@@ -1040,6 +1041,36 @@ async function updateSQL(element, date_time, value) {
 
 
 }
+
+router.post('/data_delete', authenticate, (req, resp) => {
+
+    let data = req.body;
+    var isErr = 0;
+    //console.log("Try deletion... ", data);
+    for (var i = 0; i < data.length; i++) {
+
+        if (!deleteSQL(data[i].serialnum, data[i].date_time))
+            isErr++;
+    }
+
+    return resp.json({ errcount: isErr });
+
+    // write the result
+
+})
+
+async function deleteSQL(element, date_time) {
+
+    await DATA.where({ serialnum: element, date_time: date_time })
+        .destroy().then(cursor => {
+            return true;
+        }
+        ).catch(err => {
+            return false
+        });
+
+}
+
 
 export default router;
 

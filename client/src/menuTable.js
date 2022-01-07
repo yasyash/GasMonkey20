@@ -132,6 +132,20 @@ const styles = theme => ({
         width: 30,
         height: 30,
         margin: 0
+    },
+    icon_small: {
+        margin: theme.spacing.unit * 2,
+        color: blue[600],
+        width: 25,
+        height: 25,
+        margin: 0
+    },
+    icon_small_checked: {
+        margin: theme.spacing.unit * 2,
+        color: pink[900],
+        width: 27,
+        height: 27,
+        margin: 0
     }
 });
 
@@ -197,7 +211,6 @@ class MenuTable extends Component {
             isTableStation,
             selectAll,
             sensorsList: []
-
         };
 
 
@@ -280,6 +293,11 @@ class MenuTable extends Component {
     handleImport = (name) => {
         this.props.handleDialogAdd();
     };
+
+    handleDeleteSet = (name) => {
+
+        this.props.handleDeleteSet();
+    }
 
     handleUpdateSQLClick() {
         this.props.handleUpdateData();
@@ -445,6 +463,14 @@ class MenuTable extends Component {
                             </Icon>
                         </IconButton>
                     }
+                    {(this.state.isEdit) && (!this.props.isForceToggle) &&
+                        <IconButton name="isDeleted" className={classes.button} tooltip={'Удалить записи'} aria-label="Удалить" onClick={this.handleDeleteSet}>
+                            <SvgIcon className={this.props.isDeleted ? classes.icon_small_checked : classes.icon_small}>
+                                <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 
+                                2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                            </SvgIcon>
+                        </IconButton>
+                    }
                     {(this.props.isImported) &&
                         <IconButton className={classes.button} tooltip={'Записать'} aria-label="Записать">
                             <Icon className={classes.icon} color="secondary" onClick={this.handleUpdateSQLClick}>
@@ -522,7 +548,7 @@ class MenuTable extends Component {
                         value={this.state.valueSingle}>
 
                         <div className="form-control " style={styles.menuContainer}>
-                            {(!this.props.isImported) &&(username == 'admin') && (typeof (this.props.handleToggleEdit) === 'function') && <Toggle
+                            {(!this.props.isImported) && (username == 'admin') && (typeof (this.props.handleToggleEdit) === 'function') && <Toggle
                                 name="isEdit"
                                 label="Редактировать данные"
                                 onToggle={this.handleEdit}
