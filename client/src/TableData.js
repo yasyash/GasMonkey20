@@ -26,7 +26,7 @@ import format from 'node.date-time';
 
 import TxtFieldGroup from './stuff/txtField';
 import { queryEvent } from './actions/queryActions';
-import { addDataList, deleteDataList } from './actions/dataAddActions';
+import { addDataList, deleteDataList, addActiveSensorsList, deleteActiveSensorsList } from './actions/dataAddActions';
 import { updateData, deleteData } from './actions/adminActions';
 import { query4EditEvent, queryManyEvent } from './actions/queryActions';
 
@@ -211,7 +211,7 @@ class TableData extends React.Component {
 
                             this.handleToggleEdit({ target: { name: 'isEdit' } }, false, true); //generation syntetic event
                             // this.setState({ isForceToggle: false });
-                            this.handleSynteticUpdate();    
+                            this.handleSynteticUpdate();
                         }
                     }
                 } else {
@@ -228,7 +228,7 @@ class TableData extends React.Component {
 
     handleSynteticUpdate() {
         let params = {};
-        
+
         // 0 - all stations, 1- all sensors of the station, 2 - selected sensors
         if (!isEmpty(this.props.sensors_actual)) {
             params.period_from = this.props.dateTimeBegin;
@@ -240,17 +240,19 @@ class TableData extends React.Component {
             params.averaging = 1;
 
             this.props.queryManyEvent(params).then(data => {
-                if (data.length > 0) {
-                    this.setState({ dataList: data })
-                    this.setState({ isLoading: true })
-                    this.setState({ snack_msg: 'Данные успешно обновлены...' })
+                this.props.queryManyEvent(params).then(_data => {
+                    if (_data.length > 0) {
+                        this.setState({ dataList: _data })
+                        this.setState({ isLoading: true })
+                        this.setState({ snack_msg: 'Данные успешно обновлены...' })
 
-                }
-                else {
-                    this.setState({ isLoading: true })
-                    this.setState({ snack_msg: 'Данные не обновлены...' })
+                    }
+                    else {
+                        this.setState({ isLoading: true })
+                        this.setState({ snack_msg: 'Данные не обновлены...' })
 
-                }
+                    }
+                })
             });
         }
 
@@ -614,7 +616,95 @@ class TableData extends React.Component {
                         const idd = self.props.station_actual[0];
 
                         var dataList = [];
-                        var _props = self.props.title;
+
+                        var _props = [{
+                            Header: "Время наблюдения",
+                            id: "date_time",
+                            accessor: "date_time",
+                            filterable: true
+                        }, {
+                            Header: "Тип",
+                            id: "typemeasure",
+                            accessor: "typemeasure"
+                        },
+                        {
+                            Header: "Значение",
+                            id: "measure",
+                            accessor: "measure",
+                            filterable: true,
+                            Cell: null
+
+
+                        },
+                        {
+                            Header: "Единицы",
+                            id: "unit_name",
+                            accessor: "unit_name"
+                        },
+                        {
+                            Header: "В диапазоне",
+                            id: "is_range",
+                            accessor: "is_range",
+                            foldable: true,
+                            folded: false,
+                            Cell: _row => (
+                                <div
+                                    style={{
+
+                                        borderRadius: '2px'
+                                    }}
+                                >
+                                    <div
+                                        style={{
+
+                                            backgroundColor:
+                                                _row.value == 'вне диапазона' ? '#ffa500' : '    ',
+                                            borderRadius: '2px',
+                                            transition: 'all .2s ease-out',
+                                            className: '-striped -highlight'
+                                        }}>
+                                        {_row.value}
+                                    </div>
+
+                                </div>)
+
+                        },
+                        {
+                            Header: "ID датчика",
+                            id: "serialnum",
+                            accessor: d => d.serialnum,
+                            foldable: true,
+                            folded: true
+
+                        },
+                        {
+                            Header: "Тревога",
+                            id: "is_alert",
+                            accessor: "is_alert",
+                            foldable: true,
+                            filterable: true,
+                            Cell: row => (
+                                <div
+                                    style={{
+
+                                        borderRadius: '2px'
+                                    }}
+                                >
+                                    <div
+                                        style={{
+
+                                            backgroundColor:
+                                                row.value == 'тревога' ? '#ff2e00' : '',
+                                            borderRadius: '2px',
+                                            transition: 'all .2s ease-out',
+                                            className: '-striped -highlight'
+                                        }}>
+                                        {row.value}
+                                    </div>
+
+                                </div>)
+
+                        }]
                         var title = [];
 
                         for (var line = Number(begin) - 1; line < ((Number(quant) + Number(begin) - 1 > lines.length) ? lines.length : Number(quant) + Number(begin) - 1); line++) {
@@ -630,6 +720,8 @@ class TableData extends React.Component {
 
                             deleteDataList();
                             addDataList(wrapedDataList);
+                            // deleteActiveSensorsList();
+                            //addActiveSensorsList(sensor[0]);
 
                             _props.map(item => {
                                 if (item.Cell === null) item.Cell = self.renderEditable;
@@ -941,4 +1033,4 @@ TableData.contextType = {
     router: PropTypes.object.isRequired
 }
 
-export default connect(mapStateToProps, { queryEvent, queryManyEvent, addDataList, deleteDataList, updateData, deleteData, reportXGen, query4EditEvent })(withRouter(withStyles(styles)(TableData)));
+export default connect(mapStateToProps, { queryEvent, queryManyEvent, addDataList, deleteDataList, addActiveSensorsList, deleteActiveSensorsList, updateData, deleteData, reportXGen, query4EditEvent })(withRouter(withStyles(styles)(TableData)));

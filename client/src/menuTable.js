@@ -447,7 +447,7 @@ class MenuTable extends Component {
                     </Tooltip>}
 
 
-                    {(this.state.isData) && <Tooltip id="tooltip-charts-view5" title="Импорт данных">
+                    {(this.state.isData)&&(this.props.sensorsList.length < 2) && <Tooltip id="tooltip-charts-view5" title="Импорт данных">
                         <IconButton className={classes.button} onClick={this.handleImport} aria-label="Импорт данных">
                             <SvgIcon className={classes.icon}>
                                 <path d="M16.5,6V17.5A4,4 0 0,1 12.5,21.5A4,4 0 0,1 8.5,17.5V5A2.5,2.5 0 0,1 11,2.5A2.5,2.5 
@@ -548,7 +548,7 @@ class MenuTable extends Component {
                         value={this.state.valueSingle}>
 
                         <div className="form-control " style={styles.menuContainer}>
-                            {(!this.props.isImported) && (username == 'admin') && (typeof (this.props.handleToggleEdit) === 'function') && <Toggle
+                            {(this.props.sensorsList.length == 1)&&(!this.props.isImported) && (username == 'admin') && (typeof (this.props.handleToggleEdit) === 'function') && <Toggle
                                 name="isEdit"
                                 label="Редактировать данные"
                                 onToggle={this.handleEdit}

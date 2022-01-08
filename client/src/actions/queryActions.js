@@ -336,13 +336,14 @@ export function queryManyEvent(paramstr) {
                             var work_date = moment(first_date).format('Y-MM-DD HH:mm:00');
                             work_date = moment(work_date);
                             var max_range = sensors_list[0].max_day_consentration;
-
+                            var _last_date = moment(last_date).format('Y-MM-DD HH:mm:SS');
+                            _last_date = moment(_last_date);
                             var _i = 0;
                             var _j = 0;
-                            while (work_date.isBefore(last_date)) { //averaging data
+
+                            while (work_date.isBefore(_last_date) || (work_date.isSame(_last_date))) { //averaging data
                                 _tmp = 0;
                                 counter = 0;
-                                work_date.add(paramstr.averaging, 'minutes');
                                 for (_j = _i; ((_j < data_list.length) && (!work_date.isBefore(data_list[_j].date_time))); _j++) {
 
                                     _tmp += data_list[_j].measure;
@@ -352,12 +353,12 @@ export function queryManyEvent(paramstr) {
 
                                 if (counter) {
                                     data_list[_i].measure = _tmp / counter;
-                                    data_list[_i].date_time =  new Date(work_date).format('Y-MM-dd HH:mm:SS');//new Date(first_date).format('Y-MM-dd HH:mm:SS');
+                                    data_list[_i].date_time = new Date(work_date).format('Y-MM-dd HH:mm:SS');//new Date(first_date).format('Y-MM-dd HH:mm:SS');
                                     _data.push(data_list[_i]);
                                 }
                                 _i = _j;
                                 first_date = new Date(work_date).format('Y-MM-dd HH:mm:SS');
-
+                                work_date.add(paramstr.averaging, 'minutes');
                             }
 
                             _data.forEach(element => {
@@ -401,19 +402,34 @@ export function queryManyEvent(paramstr) {
                                 return item.serialnum == _id.serialnum;
                             });
 
+                            var _i = 0;
+                            var _j = 0;
                             var _tmp = 0;
                             var counter = 0;
+                            var serialnum = _id.serialnum;
                             var first_date = data_list[0].date_time;
                             var last_date = data_list[data_list.length - 1].date_time;
+                            var _last_date = moment(last_date).format('Y-MM-DD HH:mm:SS');
+                            _last_date = moment(_last_date);
+
+                            for (_i = 0; (_i < _data_list_filter.length); _i++) {
+
+                                var test_date = moment(moment(data_list[_i].date_time).format('Y-MM-DD HH:mm:SS'));
+
+                                if (_last_date.isBefore(test_date))
+                                    _last_date = test_date;
+
+                            }
+
                             var work_date = moment(first_date).format('Y-MM-DD HH:mm:00');
                             work_date = moment(work_date);
 
-                            var _i = 0;
-                            var _j = 0;
-                            while (work_date.isBefore(last_date)) { //averaging data
+                            _i = 0;
+                            _j = 0;
+
+                            while (work_date.isBefore(_last_date) || (work_date.isSame(_last_date))) { //averaging data
                                 _tmp = 0;
                                 counter = 0;
-                                work_date.add(paramstr.averaging, 'minutes');
                                 for (_j = _i; ((_j < _data_list_filter.length) && (!work_date.isBefore(_data_list_filter[_j].date_time))); _j++) {
 
                                     _tmp += _data_list_filter[_j].measure;
@@ -429,19 +445,36 @@ export function queryManyEvent(paramstr) {
                                             if (__item.date_time == _find_date) {
                                                 let obj = {};
                                                 //obj[_data_list_filter[_i].serialnum] = _data_list_filter[_i].measure;
-                                                _data[__i][_data_list_filter[_i].serialnum] = _data_list_filter[_i].measure.toFixed(3);
+                                                _data[__i][serialnum] = _data_list_filter[_i].measure.toFixed(3);
                                             }
                                         });
                                     } else {
                                         let obj = {};
-                                        obj['date_time'] =  new Date(work_date).format('Y-MM-dd HH:mm:SS');//new Date(first_date).format('Y-MM-dd HH:mm:SS');
-                                        obj[_data_list_filter[_i].serialnum] = _data_list_filter[_i].measure.toFixed(3);
+                                        obj['date_time'] = new Date(work_date).format('Y-MM-dd HH:mm:SS');//new Date(first_date).format('Y-MM-dd HH:mm:SS');
+                                        obj[serialnum] = _data_list_filter[_i].measure.toFixed(3);
+                                        _data.push(obj);
+                                    };
+                                } else {
+                                    //if data is empty
+                                    if (units) {
+                                        let _find_date = new Date(work_date).format('Y-MM-dd HH:mm:SS');
+                                        _data.filter((__item, __i, __arr) => {
+                                            if (__item.date_time == _find_date) {
+                                                let obj = {};
+                                                //obj[_data_list_filter[_i].serialnum] = _data_list_filter[_i].measure;
+                                                _data[__i][serialnum] = '';
+                                            }
+                                        });
+                                    } else {
+                                        let obj = {};
+                                        obj['date_time'] = new Date(work_date).format('Y-MM-dd HH:mm:SS');//new Date(first_date).format('Y-MM-dd HH:mm:SS');
+                                        obj[serialnum] = '';
                                         _data.push(obj);
                                     };
                                 }
                                 _i = _j;
                                 first_date = new Date(work_date).format('Y-MM-dd HH:mm:SS');
-
+                                work_date.add(paramstr.averaging, 'minutes');
                             }
 
                             units++;
@@ -1594,17 +1627,17 @@ export function query4EditEvent(paramstr) {
 
                             var _i = 0;
                             var _j = 0;
-                            
+
 
                             data_list.forEach(element => {
-                               // let filter = sensors_list.filter((item, i, arr) => {
+                                // let filter = sensors_list.filter((item, i, arr) => {
                                 //    return item.serialnum == element.serialnum;
                                 //});
                                 //console.log('element  ', element);
 
 
 
-                               // if (!isEmpty(filter[0])) { unit_name = filter[0].unit_name }
+                                // if (!isEmpty(filter[0])) { unit_name = filter[0].unit_name }
                                 dataTable.push({
                                     id: element.idd,
                                     typemeasure: element.typemeasure,
@@ -1670,7 +1703,7 @@ export function query4EditEvent(paramstr) {
                                         });
                                     } else {
                                         let obj = {};
-                                        obj['date_time'] =  new Date(work_date).format('Y-MM-dd HH:mm:SS');//new Date(first_date).format('Y-MM-dd HH:mm:SS');
+                                        obj['date_time'] = new Date(work_date).format('Y-MM-dd HH:mm:SS');//new Date(first_date).format('Y-MM-dd HH:mm:SS');
                                         obj[_data_list_filter[_i].serialnum] = _data_list_filter[_i].measure.toFixed(3);
                                         _data.push(obj);
                                     };
