@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2020 Yaroslav Shkliar <mail@ilit.ru>
+ * Copyright © 2018-2022 Yaroslav Shkliar <mail@ilit.ru>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -34,6 +34,100 @@ function wrapData(data_in) {
     });
     return data;
 }
+
+//service handle
+export function stopService(paramstr) {
+
+    // const data = JSON.stringify(paramstr);
+    //  console.log('parameters is ', data);
+    return dispatch => {
+        return Axios.post('/api/admin/service_stop', { id: paramstr })
+            .then(resp => resp)
+    };
+};
+
+export function startService(paramstr) {
+
+    // const data = JSON.stringify(paramstr);
+    //  console.log('parameters is ', data);
+    return dispatch => {
+        return Axios.post('/api/admin/service_start', { id: paramstr })
+            .then(resp => resp)
+    };
+};
+
+export function deleteService(paramstr) {
+
+    // const data = JSON.stringify(paramstr);
+    //  console.log('parameters is ', data);
+    return dispatch => {
+        return Axios.post('/api/admin/service_del', { id: paramstr, is_present: false })
+            .then(resp => resp)
+    };
+};
+
+export function deactivateService(paramstr) {
+
+    // const data = JSON.stringify(paramstr);
+    //  console.log('parameters is ', data);
+    return dispatch => {
+        return Axios.post('/api/admin/service_del', { id: paramstr, is_present: true })
+            .then(resp => resp)
+    };
+};
+
+export function updateService(paramstr) {
+
+    // const data = JSON.stringify(paramstr);
+    //  console.log('parameters is ', data);
+    return dispatch => {
+        return Axios.post('/api/admin/service_update', ...paramstr)
+            .then(resp => resp)
+    };
+};
+export function insertService(paramstr) {
+
+    // const data = JSON.stringify(paramstr);
+    //  console.log('parameters is ', data);
+    return dispatch => {
+        return Axios.post('/api/admin/service_insert', paramstr)
+            .then(resp => {
+
+                return resp
+            })
+    };
+};
+
+export function getService() {
+
+    // const data = JSON.stringify(paramstr);
+    //  console.log('parameters is ', data);
+    return dispatch => {
+        return Axios.get('/api/admin/service_get')
+            .then(resp => {
+                let srv_list = [];
+                let data = resp.data.srv_list;
+                data.forEach(element => {
+                    srv_list.push({
+
+                        date_time: new Date(element.date_time).format('dd-MM-Y HH:mm:SS'),
+                        descr: element.descr,
+                        id: String(element.id),
+                        init_str: element.init_str,
+                        groups: element.groups,
+                        parameter: element.parameter,
+                        is_active: element.is_active
+                    })
+
+                });
+
+
+                return wrapData(srv_list);
+            })
+    };
+};
+
+//server handle
 export function deleteSrv(paramstr) {
 
     // const data = JSON.stringify(paramstr);

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2020 Yaroslav Shkliar <mail@ilit.ru>
+ * Copyright © 2022 Yaroslav Shkliar <mail@ilit.ru>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,7 +45,7 @@ import ReactTable from "react-table";
 import checkboxHOC from "react-table/lib/hoc/selectTable";
 import "react-table/react-table.css";
 import isEmpty from 'lodash.isempty';
-import { getSrv, insertSrv, updateSrv, deleteSrv} from './actions/adminActions';
+import { getService, updateService, deleteService, deactivateService, insertService, startService, stopService } from './actions/adminActions';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -54,17 +54,14 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 
-import shortid from 'shortid';
+import shortid from 'uuid/v1';
 //import './Table.css';
 //import './css/rwd-table.css';
 
 
 import TextField from 'material-ui/TextField';
 import Toggle from 'material-ui/Toggle';
-import SrvDialog from './stuff/SrvDialog';
-
-import PlayListAdd from '@material-ui/icons/PlaylistAdd';
-import Icon from '@material-ui/core/Icon';
+import ServicesDialog from './stuff/ServicesDialog';
 
 const CheckboxTable = checkboxHOC(ReactTable);
 
@@ -78,7 +75,7 @@ const styles = theme => ({
 
 
 
-class SrvLog extends React.Component {
+class ServiceFormAdmin extends React.Component {
     constructor(props) {
         super(props);
         const {
@@ -99,7 +96,7 @@ class SrvLog extends React.Component {
             dataList,
             dateTimeBegin,
             dateTimeEnd,
-            srv_list
+            soap_list
 
 
         } = props;
@@ -114,7 +111,7 @@ class SrvLog extends React.Component {
 
             dateTimeBegin, //new Date().format('Y-MM-dd') + 'T00:00',
             dateTimeEnd, //new Date().format('Y-MM-ddTH:mm'),
-            api_actual: '',
+            soap_actual: '',
             sensors_actual: [],
             stationsList,
             sensorsList,
@@ -136,9 +133,12 @@ class SrvLog extends React.Component {
             selectAll: false,
 
             isUpdated: false,
-            srv_list,
+            soap_list,
             openDialog: false,
-
+            descr: 'Строка инициализации анализатора',
+            init_str: '',
+            parameter: '',
+            groups: ''
 
         };
 
@@ -147,15 +147,42 @@ class SrvLog extends React.Component {
 
     }
 
-    handleFTP() {
-        if (!isEmpty(this.state.api_actual)) {
-            this.props.sendFtp(this.state.api_actual);
+
+    handleStart() {
+        var isReal = confirm("Вы уверены?...");
+
+        if (isReal) {
+            this.props.startService();
+            this.setState({ isLoading: true });
+            this.setState({ snack_msg: 'Сервис запущен...' });
         }
-    };
+    }
+
+
+    handleStop() {
+        var isReal = confirm("Вы уверены?...");
+
+        if (isReal) {
+            this.props.stopService();
+            this.setState({ isLoading: true });
+            this.setState({ snack_msg: 'Сервис остановлен...' });
+        }
+    }
+
+
+    handleRefresh() {
+        var isReal = confirm("Вы уверены?...");
+
+        if (isReal) {
+            this.props.stopService().then(this.props.startService());
+            this.setState({ isLoading: true });
+            this.setState({ snack_msg: 'Сервис перезапущен...' });
+        }
+    }
 
     setData(data_in) {
         const data = data_in.map(item => {
-            const _id = shortid.generate();
+            const _id = shortid();
 
 
             Object.assign(item, { _id: _id });
@@ -181,16 +208,16 @@ class SrvLog extends React.Component {
         //       ...selection.slice(0, keyIndex),
         //       ...selection.slice(keyIndex + 1)
         //  ];
-        //  if (row.id == this.state.api_actual) {
-        //       this.setState({ api_actual: '' });
+        //  if (row.id == this.state.soap_actual) {
+        //       this.setState({ soap_actual: '' });
         //  };
 
         // } else {
         // it does not exist so add it
         //ONLY ON ROW MAY BE SELECTED
         // selection = key;
-        this.setState({ api_actual: row.id });
-
+        this.setState({ soap_actual: row.id });
+        //meteo---
         //}
         // update the state
         this.setState({ selection: key });
@@ -249,16 +276,16 @@ class SrvLog extends React.Component {
 
 
 
-    //handleChange(event) {
-    //   this.setState({ height: event.target.value });
-    //};
+    handleChange(event) {
+        this.setState({ height: event.target.value });
+    };
 
     handleRowSelection(selectedRows) {
-        let ftp = (this.state.srv_list[selectedRows].id);
+        let ftp = (this.state.soap_list[selectedRows].id);
 
         this.setState({
             selected: selectedRows,
-            api_actual: ftp
+            soap_actual: ftp
         });
     };
 
@@ -282,30 +309,8 @@ class SrvLog extends React.Component {
         //   this.props.createMyEvent(this.state);
     };
 
-    handleClick() {
 
-        //e.preventDefault();
 
-        this.loadData(1).then(data => {
-            if (data) {
-                this.loadData(3);
-                // this.setState({ sensorsList: this.setData(data) })
-                this.setState({ isLoading: true });
-                this.setState({ snack_msg: 'Данные успешно загружены...' });
-                this.setState({ isUpdated: true });
-
-            }
-            else {
-                this.setState({ isLoading: false })
-                this.setState({ snack_msg: 'Данные отсутствуют...' })
-
-            }
-        });
-
-        //alert('loadData');
-
-        //   this.props.createMyEvent(this.state);
-    };
 
     renderEditable(cellInfo) {
         return (
@@ -314,23 +319,23 @@ class SrvLog extends React.Component {
                 contentEditable
                 suppressContentEditableWarning
                 onBlur={e => {
-                    const data = [...this.state.srv_list];
+                    const data = [...this.state.soap_list];
                     data[cellInfo.index][cellInfo.column.id] = e.target.innerHTML;
-                    this.setState({ srv_list: data });
+                    this.setState({ soap_list: data });
                 }}
                 dangerouslySetInnerHTML={{
-                    __html: this.state.srv_list[cellInfo.index][cellInfo.column.id]
+                    __html: this.state.soap_list[cellInfo.index][cellInfo.column.id]
                 }}
             />
         );
     } I
 
-    async    load_srv() {
+    async    load_soap() {
         let params = {};
         // 0 - all stations, 1- all sensors of the station, 2 - selected sensors
         //3 - macs table
 
-        let data = await (this.props.getSrv());
+        let data = await (this.props.getService());
         //console.log(data);
         return data;
     };
@@ -342,17 +347,18 @@ class SrvLog extends React.Component {
     };
 
     handleUpdate() {
-        if (!isEmpty(this.state.api_actual)) {
-            const { srv_list } = this.state;
-            let filter = srv_list.filter((item, i, arr) => {
-                return item.id == this.state.api_actual;
+        //updt service
+        if (!isEmpty(String(this.state.soap_actual))) {
+            const { soap_list } = this.state;
+            let filter = soap_list.filter((item, i, arr) => {
+                return item.id == this.state.soap_actual;
             });
-            this.props.updateSrv(filter).then(resp => {
+            this.props.updateService(filter).then(resp => {
                 if (resp.status == 200) {
-                    this.load_srv().then(data => {
+                    this.load_soap().then(data => {
                         if (data)
-                            this.setState({ srv_list: data });
-                        this.setState({ api_actual: '' });
+                            this.setState({ soap_list: data });
+                        this.setState({ soap_actual: '' });
 
                         this.setState({ isLoading: true });
                         this.setState({ snack_msg: 'Данные успешно обновлены...' });
@@ -366,16 +372,65 @@ class SrvLog extends React.Component {
     }
 
     handleDelete() {
-        if (!isEmpty(this.state.api_actual)) {
+        if (!isEmpty(String(this.state.soap_actual))) {
             var isReal = confirm("Вы уверены?...");
 
             if (isReal) {
-                this.props.deleteSrv(this.state.api_actual).then(resp => {
+                this.props.deleteService(this.state.soap_actual).then(resp => {
                     if (resp.status == 200) {
-                        this.load_srv().then(data => {
+                        this.load_soap().then(data => {
                             if (data)
-                                this.setState({ srv_list: data });
-                            this.setState({ api_actual: '' });
+                                this.setState({ soap_list: data });
+                            this.setState({ soap_actual: '' });
+
+                            this.setState({ isLoading: true });
+                            this.setState({ snack_msg: 'Данные удалены...' });
+                        });
+                    } else {
+                        this.setState({ isLoading: true });
+                        this.setState({ snack_msg: 'Ошибка сервера...' });
+                    };
+                });
+            };
+        }
+    }
+
+    handleActivate() {
+        if (!isEmpty(String(this.state.soap_actual))) {
+            const { soap_list } = this.state;
+            let filter = soap_list.filter((item, i, arr) => {
+                return item.id == this.state.soap_actual;
+            });
+            filter[0].is_active = !filter[0].is_active;
+            this.props.updateService(filter).then(resp => {
+                if (resp.status == 200) {
+                    this.load_soap().then(data => {
+                        if (data)
+                            this.setState({ soap_list: data });
+                        this.setState({ soap_actual: '' });
+
+                        this.setState({ isLoading: true });
+                        this.setState({ snack_msg: 'Статус изменился. Перезапустите сервис...' });
+                    });
+                } else {
+                    this.setState({ isLoading: true });
+                    this.setState({ snack_msg: 'Ошибка сервера...' });
+                };
+            });
+        }
+    }
+
+    handleDeactivate() {
+        if (!isEmpty(String(this.state.soap_actual))) {
+            var isReal = confirm("Вы уверены?...");
+
+            if (isReal) {
+                this.props.deactivateService(this.state.soap_actual).then(resp => {
+                    if (resp.status == 200) {
+                        this.load_soap().then(data => {
+                            if (data)
+                                this.setState({ soap_list: data });
+                            this.setState({ soap_actual: '' });
 
                             this.setState({ isLoading: true });
                             this.setState({ snack_msg: 'Данные удалены...' });
@@ -390,6 +445,8 @@ class SrvLog extends React.Component {
     }
 
     handleDialogAdd() {
+        this.setState({ idd: shortid() });
+
         this.setState({ openDialog: true });
 
     }
@@ -399,41 +456,26 @@ class SrvLog extends React.Component {
     };
 
     handleChange = name => event => {
-        //getSRVFunc
+        //getFTPFunc
         this.setState({
             [name]: event.target.value,
         });
     };
 
     handleAdd() {
-
         //insert action
-        const { date_time,
-            serialnum,
-            name,
-            result,
-            person,
-            note,
-            inv_num } = this.state;
-
-        this.props.insertSrv({
-            serialnum,
-            name,
-            result,
-            person,
-            note,
-            inv_num, date_time
-        })
+        let { descr, init_str, parameter, groups } = this.state;
+        this.props.insertService({ descr, init_str, parameter, groups })
             .then(resp => {
                 this.setState({ openDialog: false });
 
                 if (resp.status == 200) {
-                    this.load_srv().then(data => {
+                    this.load_soap().then(data => {
                         if (data)
-                            this.setState({ srv_list: data });
+                            this.setState({ soap_list: data });
 
                         this.setState({ isLoading: true });
-                        this.setState({ snack_msg: 'Данные успешно добавлены...' });
+                        this.setState({ snack_msg: 'Строка иницилизации добавлена...' });
 
                     });
                 } else {
@@ -447,16 +489,21 @@ class SrvLog extends React.Component {
 
     componentWillMount() {
 
-        this.load_srv().then(data => {
+
+        this.load_soap().then(data => {
             if (data)
-                this.setState({ srv_list: data });
+                this.setState({ soap_list: data });
         });
+
+
+
+
 
     };
 
 
     render() {
-        const { srv_list } = this.state;
+        const { soap_list } = this.state;
         const { snack_msg, isLoading } = this.state;
 
         const { toggleSelection, toggleAll, isSelected } = this;
@@ -505,69 +552,50 @@ class SrvLog extends React.Component {
             </div>;
         const Title = [
             {
-                Header: "Журнал обслуживания оборудования ПНЗ",
+                Header: "Строки параметров сервиса сбора данных",
                 columns: [
                     {
-                        Header: "Время",
+                        Header: "Описание",
+                        id: "descr",
+                        accessor: d => d.id,
+                        Cell: this.renderEditable,
+
+                    },
+                    {
+                        Header: "Строка инициализации",
+                        id: "init_str",
+                        accessor: "init_str",
+                        Cell: this.renderEditable,
+                        filterable: true
+
+                    },
+
+                    {
+                        Header: "Параметр",
+                        id: "parameter",
+                        accessor: "parameter",
+                        Cell: this.renderEditable
+
+                    },
+
+                    {
+                        Header: "Группа",
+                        id: "groups",
+                        accessor: "groups",
+                        Cell: this.renderEditable
+
+                    },
+                    {
+                        Header: "Активно",
+                        id: "is_active",
+                        accessor: row => (row.is_active && true) ? 'активно' : 'неактивно'
+                    },
+
+                    {
+                        Header: "Дата изменения",
                         id: "date_time",
-                        accessor: "date_time",
-                        Cell: this.renderEditable,
-                        filterable: true
-
-                    },
-                    {
-                        Header: "Серийный номер",
-                        id: "serialnum",
-                        accessor: "serialnum",
-                        Cell: this.renderEditable,
-                        filterable: true
-
-                    },
-
-                    {
-                        Header: "Инвентарный номер",
-                        id: "inv_num",
-                        accessor: "inv_num",
-                        Cell: this.renderEditable,
-                        filterable: true
-
-                    },
-                    {
-                        Header: "Наименование",
-                        id: "name",
-                        accessor: "name",
-                        Cell: this.renderEditable,
-                        filterable: true
-
-                    },
-                    {
-                        Header: "Перечень работ",
-                        id: "note",
-                        accessor: "note",
-                        Cell: this.renderEditable,
-                        filterable: true
-
-
-                    },
-
-
-                    {
-                        Header: "Результаты работ",
-                        id: "result",
-                        accessor: "result",
-                        Cell: this.renderEditable,
-                        filterable: true
-
-                    },
-                    {
-                        Header: "Отвественный",
-                        id: "person",
-                        accessor: "person",
-                        Cell: this.renderEditable,
-                        filterable: true
-
+                        accessor: "date_time"
                     }
-
 
                 ]
             }
@@ -580,28 +608,33 @@ class SrvLog extends React.Component {
             <Paper className={classes.root}>
                 <br />
                 <MenuAdmin
-                    {...this.props} snack_msg={snack_msg} isLoading={isLoading}
+                    {...this.props} snack_msg={snack_msg} isLoading={isLoading} type='SERVICE'
 
                     handleSnackClose={this.handleSnackClose.bind(this)}
                     handleUpdate={this.handleUpdate.bind(this)}
+                    handleActivate={this.handleActivate.bind(this)}
                     handleDelete={this.handleDelete.bind(this)}
                     handleDialogAdd={this.handleDialogAdd.bind(this)}
-                    data_actual={this.state.api_actual}
+                    handleStart={this.handleStart.bind(this)}
+                    handleStop={this.handleStop.bind(this)}
+                    handleRefresh={this.handleRefresh.bind(this)}
+
+                    data_actual={this.state.soap_actual}
+
                 />
-
-
-                <SrvDialog openDialog={this.state.openDialog}
+                <ServicesDialog openDialog={this.state.openDialog}  {...this.state}
                     handleDialogClose={this.handleDialogClose.bind(this)}
-                    date_time ={ new Date().format('dd-mm-Y H:mm:SS')}
                     handleAdd={this.handleAdd.bind(this)}
-                    handleChange={this.handleChange.bind(this)} />
+                    handleChange={this.handleChange.bind(this)}
+                    title={'Введите параметры сервиса:'}
+                />
 
 
                 <div >
                     <CheckboxTable
                         ref={r => (this.checkboxTable = r)}
                         {...checkboxProps}
-                        data={srv_list}
+                        data={soap_list}
                         columns={Title}
                         defaultPageSize={7}
                         previousText={'Предыдущие'}
@@ -641,7 +674,7 @@ function mapStateToProps(state) {
           multiSelectable: state.multiSelectable,
           enableSelectAll: state.enableSelectAll,
           deselectOnClickaway: state.deselectOnClickaway,
-          showCheckboxes: stFapi_ate.showCheckboxes,*/
+          showCheckboxes: state.showCheckboxes,*/
         //sensorsList: state.sensorsList
         station_actual: station,
         dateTimeBegin: state.datePickers.dateTimeBegin,
@@ -651,16 +684,18 @@ function mapStateToProps(state) {
 }
 
 
-SrvLog.propTypes = {
-    getSrv: PropTypes.func.isRequired,
-    insertSrv: PropTypes.func.isRequired,
+ServiceFormAdmin.propTypes = {
+    //getMeteo: PropTypes.func.isRequired,
+    //updateMeteo: PropTypes.func.isRequired,
+    //deleteMeteo: PropTypes.func.isRequired,
+    //insertMeteo: PropTypes.func.isRequired,
     classes: PropTypes.object.isRequired
 }
 
-SrvLog.contextType = {
+ServiceFormAdmin.contextType = {
     router: PropTypes.object.isRequired
 }
 
 export default connect(null, {
-    getSrv, insertSrv, updateSrv, deleteSrv
-})(withRouter(withStyles(styles)(SrvLog)));
+    getService, updateService, deleteService, deactivateService, insertService, startService, stopService
+})(withRouter(withStyles(styles)(ServiceFormAdmin)));

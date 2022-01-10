@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2021 Yaroslav Shkliar <mail@ilit.ru>
+ * Copyright © 2018-2022 Yaroslav Shkliar <mail@ilit.ru>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@ import isUUid from 'validator/lib/isUUID';
 import url from 'url';
 import qs from 'querystring';
 
+import SRVCS from '../models/services';
 import SRV from '../models/service';
 import INJ from '../models/injection';
 import FTP from '../models/ftp';
@@ -43,8 +44,158 @@ import DATA from '../models/data';
 import { isString, isNumber } from 'util';
 import { stat } from 'fs';
 
+import { exec } from 'child_process';
+
 let router = express.Router();
 
+//service handling
+router.post('/service_stop', authenticate, (req, resp) => {
+    exec('sudo systemctl stop fetcher-weather.service', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`error: ${error.message}`);
+            resp.status(500).json({ result: error });
+        }
+
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            resp.status(500).json({ result: stderr });
+        }
+
+        
+            resp.status(200).json({ result: "stopped..." });
+        
+
+    });
+
+})
+
+router.post('/service_start', authenticate, (req, resp) => {
+
+    let data = req.body;
+
+    exec('sudo systemctl start fetcher-weather.service', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`error: ${error.message}`);
+            resp.status(500).json({ result: error });
+        }
+
+        if (stderr) {
+            console.error(`stderr: ${stderr}`);
+            resp.status(500).json({ result: stderr });
+        }
+
+        
+            resp.status(200).json({ result: "started..." });
+        
+
+    });
+
+})
+
+router.post('/service_del', authenticate, (req, resp) => {
+    //  
+
+    let data = req.body;
+    let type = data.is_present;
+
+    if (!type) {
+        SRVCS.where({ id: data.id })
+            .save({
+                is_present: false
+            }, { patch: true })
+            .then(result => {
+                resp.json({ result });
+            }).catch(err => resp.status(500).json({ error: ' ' + err }));
+    } else {
+        SRVCS.where({ id: data.id })
+            .save({
+                is_active: false
+            }, { patch: true })
+            .then(result => {
+                resp.json({ result });
+            }).catch(err => resp.status(500).json({ error: ' ' + err }));
+    }
+    // write the result
+
+})
+
+router.post('/service_update', authenticate, (req, resp) => {
+
+    let data = req.body;
+    //console.log( data);
+
+    let date_time = data.date_time;
+    if (isEmpty(date_time))
+        date_time = new Date().format('dd-MM-Y H:mm:SS');
+    let init_str = data.init_str;
+    let descr = data.descr;
+    let groups = data.groups;
+    let parameter = data.parameter;
+    let is_active = data.is_active;
+
+    SRVCS.where({ id: data.id })
+        .save({
+            date_time, init_str, descr, groups, parameter, is_active
+
+        }, { patch: true })
+        .then(result => {
+            resp.json({ result });
+        }).catch(err => resp.status(500).json({ error: ' ' + err }));
+    // write the result
+
+})
+router.post('/service_insert', authenticate, (req, resp) => {
+
+    let data = req.body;
+    console.log(data);
+
+    //  console.log(req.body);
+
+    SRVCS.query('where', 'id', '>', '0').orderBy('date_time', 'DESC').fetchAll()
+        .then(res => {
+            var result_parse0 = JSON.stringify(res);
+            var arr = JSON.parse(result_parse0);
+            let id = 1;
+            // console.log(String(Number(arr[0].id) + 1))
+            if (!isEmpty(arr[0]))
+                id = String(Number(arr[0].id) + 1);
+
+            let date_time = data.date_time;
+            if (isEmpty(date_time))
+                date_time = new Date().format('dd-MM-Y H:mm:SS');
+            let init_str = data.init_str;
+            let descr = data.descr;
+            let groups = data.groups;
+            let parameter = data.parameter;
+            let is_active = false;
+            let is_present = true;
+
+            SRVCS.forge({ id }).save({
+                date_time, init_str, descr, groups, parameter, is_active, is_present
+
+            }, { method: 'insert' })
+                .then(result => resp.json({ success: true }))
+                .catch(err => resp.status(500).json({ error: err }));
+
+        }).catch(err => resp.status(500).json({ error: ' ' + err }));
+    // write the result
+
+})
+
+
+router.get('/service_get', authenticate, (req, resp) => {
+
+    SRVCS.query('where', 'is_present', '=', 'true').orderBy('id', 'ASC').fetchAll().then(srv_list => {
+        resp.json({ srv_list });
+    }).catch(err => {
+
+        resp.status(500).json({ error: err })
+    });
+    // write the result
+
+});
+
+//server handling
 router.post('/srv_del', authenticate, (req, resp) => {
     //  
 
@@ -72,7 +223,7 @@ router.post('/srv_update', authenticate, (req, resp) => {
 
     let date_time = data.date_time;
     if (isEmpty(date_time))
-        date_time = new Date().format('dd-mm-Y H:mm:SS');
+        date_time = new Date().format('dd-MM-Y H:mm:SS');
     let serialnum = data.serialnum;
     let name = data.name;
     let result = data.result;
@@ -99,7 +250,7 @@ router.post('/srv_insert', authenticate, (req, resp) => {
     // let obj = qs.parse(query);
     //let data = JSON.parse(obj.data);
     let data = req.body;
-    console.log(data);
+    //console.log(data);
 
     //  console.log(req.body);
 
@@ -114,7 +265,7 @@ router.post('/srv_insert', authenticate, (req, resp) => {
 
             let date_time = data.date_time;
             if (isEmpty(date_time))
-                date_time = new Date().format('dd-mm-Y H:mm:SS');
+                date_time = new Date().format('dd-MM-Y H:mm:SS');
             let serialnum = data.serialnum;
             let name = data.name;
             let result = data.result;
@@ -158,6 +309,7 @@ router.get('/srv_get', authenticate, (req, resp) => {
     // write the result
 
 });
+
 //REST api
 router.post('/api_insert', authenticate, (req, resp) => {
     //  

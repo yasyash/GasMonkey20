@@ -52,7 +52,7 @@ import toUpper from 'lodash/toUpper';
 import "react-table/react-table.css";
 import isNumber from 'lodash.isnumber';
 
-import { getSrv,getApi, getFtp, getSoap, getUser, getMeteo, getDev } from './actions/adminActions';
+import { getService, getSrv, getApi, getFtp, getSoap, getUser, getMeteo, getDev } from './actions/adminActions';
 
 import SrvLog from './SrvLog';
 import ApiForm from './ApiForm';
@@ -61,6 +61,7 @@ import SoapForm from './SoapForm';
 import UserForm from './UserForm';
 import MeteoFormAdmin from './MeteoFormAdmin';
 import EquipmentForm from './EquipmentForm';
+import ServiceFormAdmin from './ServiceFormAdmin';
 
 const styles = theme => ({
     root: {
@@ -204,7 +205,12 @@ class AdminForm extends React.Component {
                             getDev={getDev}
                         />
                     </Tab>
-                   
+                    <Tab label="Сервисы">
+                        <ServiceFormAdmin
+                            {...this.state}
+                        getService={getService}
+                        />
+                    </Tab>
                     <Tab label="FTP выгрузка" >
                         <FtpForm
                             {...this.state}
@@ -212,7 +218,7 @@ class AdminForm extends React.Component {
                         />
                     </Tab>
 
-                   
+
                     <Tab label="API uri" >
                         <ApiForm
                             {...this.state}
@@ -237,7 +243,7 @@ function mapStateToProps(state) {
     let station = '';
     let tmp = '';
     if (state.activeStationsList[1]) {
-        tmp = state.activeStationsList.slice(state.activeStationsList.length - 1, );
+        tmp = state.activeStationsList.slice(state.activeStationsList.length - 1);
         sensors = tmp[0].sensors;
 
     };

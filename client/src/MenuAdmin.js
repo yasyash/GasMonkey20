@@ -64,7 +64,9 @@ import isEmpty from 'lodash.isempty';
 import SaveIcon from './icons/save-icon';
 import DevAdd from './icons/device-add';
 
-
+import Play from '@material-ui/icons/PlayArrow';
+import Stop from '@material-ui/icons/Stop';
+import Refresh from '@material-ui/icons/Refresh';
 
 
 
@@ -225,10 +227,15 @@ class MenuAdmin extends Component {
         // this.setState({options});
 
     };
-    handleActivate = (name) => {
-        this.props.handleActivate();
+    handleStart = (name) => {
+        this.props.handleStart();
     }
-
+    handleStop = (name) => {
+        this.props.handleStop();
+    }
+    handleRefresh = (name) => {
+        this.props.handleRefresh();
+    }
     handleUpdateClick = (name) => {
         this.props.handleUpdate();
     };
@@ -243,7 +250,9 @@ class MenuAdmin extends Component {
         this.setState({ anchorEl: null });
 
     };
-
+    handleActivate = (name) => {
+        this.props.handleActivate();
+    };
 
 
 
@@ -270,7 +279,7 @@ class MenuAdmin extends Component {
                                 </IconButton>
                             </Tooltip>
 
-                            {(type == 'API') && <Tooltip id="tooltip-charts-view3" title="Активировать ">
+                            {((type == 'API')) && <Tooltip id="tooltip-charts-view3" title="Активировать">
                                 <IconButton className={classes.button} onClick={this.handleActivate} aria-label="Активировать">
 
                                     <Icon className={classes.icon} color="primary">
@@ -278,7 +287,14 @@ class MenuAdmin extends Component {
                                     </Icon>
                                 </IconButton>
                             </Tooltip>}
+                            {((type == 'SERVICE')) && <Tooltip id="tooltip-charts-view3" title="Активировать/Декативировать">
+                                <IconButton className={classes.button} onClick={this.handleActivate} aria-label="Активировать">
 
+                                    <Icon className={classes.icon} color="primary">
+                                        < Visibility />
+                                    </Icon>
+                                </IconButton>
+                            </Tooltip>}
                             <Tooltip id="tooltip-charts-view3" title="Добавить">
                                 <IconButton className={classes.button} onClick={this.handleAdd} aria-label="Добавить">
 
@@ -287,6 +303,8 @@ class MenuAdmin extends Component {
                                     </Icon>
                                 </IconButton>
                             </Tooltip>
+
+
                             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                             <Tooltip id="tooltip-charts-view4" title="Удалить">
                                 <IconButton className={classes.button} onClick={this.handleDeleteClick} aria-label="Удалить">
@@ -296,6 +314,34 @@ class MenuAdmin extends Component {
                                     </Icon>
                                 </IconButton>
                             </Tooltip>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+                            {(type == 'SERVICE') && <Tooltip id="tooltip-charts-view5" title="Запустить сервис">
+                                <IconButton className={classes.button} onClick={this.handleStart} aria-label="Запустить">
+
+                                    <Icon className={classes.icon} color="primary">
+                                        < Play />
+                                    </Icon>
+                                </IconButton>
+                            </Tooltip>}
+
+                            {(type == 'SERVICE') && <Tooltip id="tooltip-charts-view5" title="Остановить сервис">
+                                <IconButton className={classes.button} onClick={this.handleStop} aria-label="Остановить">
+
+                                    <Icon className={classes.icon} color="primary">
+                                        < Stop />
+                                    </Icon>
+                                </IconButton>
+                            </Tooltip>}
+
+                            {(type == 'SERVICE') && <Tooltip id="tooltip-charts-view5" title="Перезапустить сервис">
+                                <IconButton className={classes.button} onClick={this.handleRefresh} aria-label="Перезапуск">
+
+                                    <Icon className={classes.icon} color="primary">
+                                        < Refresh />
+                                    </Icon>
+                                </IconButton>
+                            </Tooltip>}
                         </div>
                         <div className={classes.root}>
 

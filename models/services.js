@@ -1,5 +1,5 @@
 /*
- * Copyright © 2018-2020 Yaroslav Shkliar <mail@ilit.ru>
+ * Copyright © 2022 Yaroslav Shkliar <mail@ilit.ru>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,24 +16,10 @@
  * www.ilit.ru on e-mail: mail@ilit.ru
  * Also you сould open support domain www.cleenair.ru or write to e-mail: mail@cleenair.ru
  */
+import bookshelf from '../api/bookshelf';
 
-import { SET_MACS_LIST } from "../actions/types";
-import isEmpty from 'lodash.isempty';
+export default bookshelf.Model.extend({
 
-const initialState = [{
-    dataList: []
-}];
+    tableName: 'service'
 
-export default (state = [], action = {}) => {
-
-    switch (action.type) {
-        case SET_MACS_LIST:
-            return [
-                ...action.data
-            ];
-
-        default: return state;
-
-    }
-
-}
+});
