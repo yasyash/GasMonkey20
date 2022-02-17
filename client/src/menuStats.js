@@ -178,8 +178,8 @@ class MenuStats extends Component {
             meteoOptions,
             checked: [],
             consentration: '',
-            chemical_list: ['Направление ветра', 'NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'CH2O', 'PM1', 'PM2.5', 'PM10', 'Пыль общая',
-                'бензол', 'толуол', 'этилбензол', 'м,п-ксилол', 'о-ксилол', 'хлорбензол', 'стирол', 'фенол'],
+            chemical_list: ['NO', 'NO2', 'NH3', 'SO2', 'H2S', 'O3', 'CO', 'PM1', 'PM2.5', 'PM10', 'Пыль общая',
+                'бензол', 'толуол', 'этилбензол', 'м-ксилол', 'о-ксилол', 'п-ксилол', 'хлорбензол', 'стирол', 'фенол', 'м,п-ксилол', 'CH2O'],
             chemical: '',
             station_actual: '',
             station_id: '',
@@ -257,6 +257,10 @@ class MenuStats extends Component {
                         }
                     })
                 }
+                let target = { 'name': 'chemical', 'value': 'Направление ветра' };
+                let _event = { target };
+                this.handleSelectChemicalChange(_event);
+
             })
 
         }
@@ -289,20 +293,23 @@ class MenuStats extends Component {
         }
         this.setState({ [id]: __time });
 
-        if (this.state.sensors_actual && this.state.station_actual) {
+        //if (this.state.sensors_actual && this.state.station_actual) {
 
-            this.loadData(2, this.state.station_id, this.state.sensors_actual, __timein, __timeout).then(_data => {
-                if (_data.length > 0) {
-                    this.setState({ dataList: _data, isLoading: true, snack_msg: 'Данные загружены. Выберите диаграмму...' });
-                    this.props.getChartData(this.props.checkedMeteo, this.props.whatsRange);
-                }
-                else {
-                    this.setState({ dataList: [], isLoading: true, snack_msg: 'Данные отстутствуют...' });
-                    this.props.getChartData(this.props.checkedMeteo, this.props.whatsRange);
-                }
+        /*this.loadData(2, this.state.station_id, this.state.sensors_actual, __timein, __timeout).then(_data => {
+            if (_data.length > 0) {
+                this.setState({ dataList: _data, isLoading: true, snack_msg: 'Данные загружены. Выберите диаграмму...' });
+                this.props.getChartData(this.props.checkedMeteo, this.props.whatsRange);
+            }
+            else {
+                this.setState({ dataList: [], isLoading: true, snack_msg: 'Данные отстутствуют...' });
+                this.props.getChartData(this.props.checkedMeteo, this.props.whatsRange);
+            }
 
-            })
-
+        })*/
+        if (this.state.station_actual) {
+            let target = { 'name': 'chemical', 'value': 'Направление ветра' };
+            let _event = { target };
+            this.handleSelectChemicalChange(_event);
         }
         //  dateAddAction({ [id]: value });
     };
@@ -419,19 +426,37 @@ class MenuStats extends Component {
 
     }
 
-    handleLocalAverage = (name) => {
-        const { sensors_actual, sensorsList } = this.state;
-        if (sensorsList) {
-            var filter = sensorsList.filter((item, i, arr) => {
-                return item.typemeasure == 'Направление ветра';
-            });
+    handleRose = (event) => {
+        if (this.state.chemical == 'Направление ветра') {
+            this.props.handleRose(event.target.name, event);
+        } else {
+            if (this.state.station_actual) {
+                let target = { 'name': 'chemical', 'value': 'Направление ветра' };
+                let _event = { target };
+                this.setState({ sensors_actual: '' });
+                this.handleSelectChemicalChange(_event);
+            }
         }
-        if (!isEmpty(filter))
-            this.loadWindData(2,filter[0].id ,filter[0].serialnum, this.state.dateTimeBegin, this.state.dateTimeEnd).then(_windData => {
-                if (_windData.length > 0) {
-                    this.props.getRadarData(false, _windData);
-                }
-            })
+    }
+
+    handleLocalAverage = (name) => {
+        const { sensors_actual, sensorsList, chemical } = this.state;
+        if (chemical != 'Направление ветра') {
+            if (sensorsList) {
+                var filter = sensorsList.filter((item, i, arr) => {
+                    return item.typemeasure == 'Направление ветра';
+                });
+            }
+            if (!isEmpty(filter))
+                this.loadWindData(2, filter[0].id, filter[0].serialnum, this.state.dateTimeBegin, this.state.dateTimeEnd).then(_windData => {
+                    if (_windData.length > 0) {
+                        this.props.getRadarData(false, _windData);
+                    }
+                })
+        } else {
+            this.setState({ isLoading: true, snack_msg: 'Данные для распределения концентрации не загружены! Выберите компонент из списка.' });
+
+        }
     }
 
     async    loadWindData(qtype, _params_stations, _params_sensors, _dtBegin, _dtEnd) {
@@ -729,16 +754,19 @@ class MenuStats extends Component {
                             }
 
                             <Tooltip id="tooltip-charts-view4" title="Роза ветров">
-                                <IconButton className={classes.icon_mnu} id="roze-bt" onClick={this.props.handleRose} aria-label="Роза ветров">
-                                    <PagesIcon className={classes.icon_mnu} style={{ width: 30, height: 30 }} />
+                                <IconButton className={classes.icon_mnu} id="roze-bt" onClick={this.handleRose} aria-label="Роза ветров">
+                                    <SvgIcon className={classes.icon_mnu} style={{ width: 30, height: 30 }}>
+                                        <path d="M15 9L12 0L9 9L0 12L9 15L12 24L15 15L24 12L15 9M4 12L10 10L11 12H4M12 20L10 14L12 13V20M12 4L14 10L12 11V4M14 14L13 12H20L14 14M8.7 17.3L5 19L6.7 15.3L8.3 15.8L8.7 17.3M17.3 15.3L19 19L15.3 17.3L15.8 15.7L17.3 15.3M6.7 8.7L5 5L8.7 6.7L8.2 8.2L6.7 8.7M15.3 6.7L19 5L17.3 8.7L15.7 8.2L15.3 6.7Z" />
+                                    </SvgIcon>
 
                                 </IconButton>
                             </Tooltip>
 
-                            <Tooltip id="tooltip-charts-view5" title="Средняя концентрация">
-                                <IconButton className={classes.icon_mnu} id="consentration-bt" onClick={this.handleLocalAverage} aria-label="Средняя концентрация">
-                                    <TrackChangesIcon className={classes.icon_mnu} style={{ width: 30, height: 30 }} />
-
+                            <Tooltip id="tooltip-charts-view5" title="Распределение концентрации">
+                                <IconButton className={classes.icon_mnu} id="consentration-bt" onClick={this.handleLocalAverage} aria-label="Распределение концентрации">
+                                    <SvgIcon className={classes.icon_mnu} style={{ width: 30, height: 30 }}>
+                                        <path d="M11.2 4C9.94 4.12 8.72 4.53 7.64 5.2L6.64 3.47C7.95 2.64 9.45 2.13 11 2M17.53 6.25C16.62 5.39 15.53 4.73 14.34 4.33L15 2.39C16.5 2.84 17.89 3.66 19 4.78M5.34 7.41C4.64 8.44 4.19 9.6 4 10.83L2 10.55C2.2 9 2.79 7.5 3.7 6.23M22 12V12.66L20 12.5V12C20 10.92 19.81 9.86 19.39 8.86L21.22 8.06C21.75 9.31 22 10.65 22 12M6 17.3L4.5 18.61C3.47 17.43 2.72 16.04 2.3 14.53L4.17 14C4.53 15.22 5.16 16.35 6 17.3M12.14 22H12C10.5 22 9 21.68 7.64 21.07L8.53 19.24C9.62 19.75 10.8 20 12 20H12.19M17 21H15V15H21V17H18.42L21.14 19.76L19.73 21.17L17 18.5" />
+                                    </SvgIcon>
                                 </IconButton>
                             </Tooltip>
 
